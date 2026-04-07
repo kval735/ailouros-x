@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ailouros X</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Abril+Fatface&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #fce8f0;
+      --bg2:       #f9dde9;
+      --surface:   #fff5f9;
+      --surface2:  #ffeef5;
+      --border:    #f0c8dd;
+
+      --text:      #3a2030;
+      --text2:     #6b4258;
+      --muted:     #b8849e;
+
+      --pink:      #f48cb1;
+      --pink-soft: #f9c0d6;
+      --rose:      #e8769a;
+      --lavender:  #c9aee8;
+      --lilac:     #dfc5f5;
+      --purple:    #a97dd4;
+      --yellow:    #f9e07a;
+      --peach:     #f9c497;
+      --mint:      #a8e6c8;
+      --sky:       #b0d9f5;
+      --coral:     #f5a09a;
+
+      --radius: 18px;
+      --ui:       'Aptos', 'Segoe UI', sans-serif;
+      --serif:    'Aptos', 'Segoe UI', sans-serif;
+      --logo:     'Fredoka One', cursive;
+      --broadway: 'Abril Fatface', fantasy;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ui);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 380px 260px at 8%  15%, #f9d0e4 0%, transparent 70%),
+        radial-gradient(ellipse 300px 220px at 92% 8%,  #e8d5f5 0%, transparent 70%),
+        radial-gradient(ellipse 260px 200px at 85% 90%, #fde8b8 0%, transparent 70%),
+        radial-gradient(ellipse 320px 240px at 12% 88%, #cce8fa 0%, transparent 70%),
+        radial-gradient(ellipse 200px 160px at 50% 50%, #f5d5e8 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 32px;
+      height: 90px;
+      background: rgba(255, 240, 249, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 2px solid var(--pink-soft);
+      box-shadow: 0 2px 20px rgba(244,140,177,0.12);
+    }
+
+    .logo-img {
+      height: 68px;
+      width: auto;
+      mix-blend-mode: multiply;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* ── LAYOUT ── */
+    .workspace {
+      display: flex;
+      height: calc(100vh - 90px);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .essays-panel   { flex: 3; border-right: 2px solid var(--pink-soft); }
+    .thoughts-panel { flex: 1; background: rgba(255,245,252,0.5); }
+
+    /* ── PANEL HEADER ── */
+    .panel-header {
+      padding: 12px 22px;
+      border-bottom: 2px solid var(--pink-soft);
+      background: rgba(255,245,252,0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-family: var(--logo);
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+    }
+
+    .pill {
+      font-size: 0.66rem;
+      font-weight: 800;
+      padding: 3px 11px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── FEED ── */
+    .feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--pink-soft) transparent;
+    }
+
+    .feed::-webkit-scrollbar       { width: 5px; }
+    .feed::-webkit-scrollbar-track { background: transparent; }
+    .feed::-webkit-scrollbar-thumb { background: var(--pink-soft); border-radius: 10px; }
+
+    .feed-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* ── ESSAY CARDS ── */
+    .essay-card               { --c: var(--pink);    --cb: #fce0ea; }
+    .essay-card:nth-child(2n) { --c: var(--lavender); --cb: #ede0f8; }
+    .essay-card:nth-child(3n) { --c: #e8c44a;         --cb: #fdf5d0; }
+    .essay-card:nth-child(4n) { --c: var(--mint);     --cb: #daf5ec; }
+    .essay-card:nth-child(5n) { --c: var(--peach);    --cb: #fdeedd; }
+    .essay-card:nth-child(6n) { --c: var(--sky);      --cb: #dff0fc; }
+    .essay-card:nth-child(7n) { --c: var(--purple);   --cb: #ecddf8; }
+
+    .essay-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 2px solid var(--cb);
+      border-left: 6px solid var(--c);
+      padding: 20px 22px;
+      box-shadow: 0 3px 14px rgba(220,140,170,0.10);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .essay-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(200,120,170,0.18);
+    }
+
+    /* ── THOUGHT CARDS ── */
+    .thought-card               { --c: var(--yellow);   --cb: #fffae0; }
+    .thought-card:nth-child(2n) { --c: var(--pink-soft); --cb: #ffeef5; }
+    .thought-card:nth-child(3n) { --c: var(--lilac);    --cb: #f5eeff; }
+    .thought-card:nth-child(4n) { --c: var(--mint);     --cb: #e8faf3; }
+    .thought-card:nth-child(5n) { --c: var(--peach);    --cb: #fff0e5; }
+    .thought-card:nth-child(6n) { --c: var(--sky);      --cb: #e8f4fd; }
+
+    .thought-card {
+      background: var(--cb);
+      border-radius: var(--radius);
+      border: 2px solid var(--c);
+      padding: 14px 15px;
+      box-shadow: 0 2px 10px rgba(200,140,180,0.10);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .thought-card:hover {
+      transform: translateY(-2px) rotate(0.5deg);
+      box-shadow: 0 8px 22px rgba(180,120,160,0.18);
+    }
+
+    /* ── META ROW ── */
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      font-family: var(--ui);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .meta-info { flex: 1; min-width: 0; }
+
+    .meta-name {
+      font-size: 0.83rem;
+      font-weight: 800;
+      color: var(--text2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta-time {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .word-badge {
+      font-size: 0.64rem;
+      font-weight: 800;
+      color: var(--text2);
+      background: var(--cb);
+      border: 2px solid var(--c);
+      border-radius: 20px;
+      padding: 2px 10px;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .essay-card h3 {
+      font-family: var(--serif);
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .card-body {
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text2);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card-body.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .thought-body-text {
+      font-family: var(--serif);
+      font-size: 0.87rem;
+      line-height: 1.7;
+      color: var(--text2);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-style: italic;
+    }
+
+    .read-more {
+      margin-top: 8px;
+      background: none;
+      border: none;
+      color: var(--purple);
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 800;
+      font-family: var(--ui);
+      padding: 0;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+
+    .read-more:hover { opacity: 0.65; }
+
+    /* ── COMPOSE AREAS ── */
+    .compose-area {
+      border-top: 2px solid var(--pink-soft);
+      background: rgba(255,240,249,0.90);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+    }
+
+    .compose-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field-wrap { flex: 1; }
+
+    .compose-label {
+      display: block;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .compose-input {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-family: var(--broadway);
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .compose-input:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 3px rgba(244,140,177,0.18);
+    }
+
+    .compose-textarea {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-family: var(--broadway);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .compose-textarea:focus {
+      border-color: var(--lavender);
+      box-shadow: 0 0 0 3px rgba(201,174,232,0.22);
+    }
+
+    .thoughts-compose .compose-textarea {
+      resize: none;
+      height: 72px;
+    }
+
+    .thoughts-compose .compose-textarea:focus {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 3px rgba(249,224,122,0.30);
+    }
+
+    .compose-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .counter { font-size: 0.7rem; font-weight: 800; color: var(--muted); letter-spacing: 0.06em; }
+    .counter.warn { color: #d4940a; }
+    .counter.over { color: #d94040; }
+
+    /* ── Buttons ── */
+    .post-btn {
+      border: none;
+      border-radius: 50px;
+      padding: 9px 26px;
+      font-size: 0.82rem;
+      font-family: var(--ui);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, #e8709a, #b070d8);
+      box-shadow: 0 4px 14px rgba(200,100,180,0.30);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .post-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(200,100,180,0.40);
+    }
+
+    .post-btn:active:not(:disabled) { transform: scale(0.95); }
+    .post-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .thought-btn {
+      background: linear-gradient(135deg, #f9d050, #f09a50);
+      box-shadow: 0 4px 14px rgba(240,154,80,0.30);
+      color: #3a2010;
+      text-shadow: none;
+    }
+
+    .thought-btn:hover:not(:disabled) {
+      box-shadow: 0 8px 22px rgba(240,154,80,0.40);
+    }
+
+    /* ── THOUGHTS COMPOSE ── */
+    .thoughts-compose {
+      border-top: 2px solid var(--pink-soft);
+      background: rgba(255,240,249,0.90);
+      backdrop-filter: blur(10px);
+      padding: 14px 16px;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #3a2030;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img class="logo-img" src="logo.png" alt="Ailouros X" />
+</header>
+
+<div class="workspace">
+
+  <!-- LEFT: Essays -->
+  <section class="panel essays-panel">
+    <div class="panel-header">
+      <span class="panel-title" style="color:var(--purple)">Essays &amp; Long-form</span>
+      <span class="pill" style="background:var(--lilac);color:var(--purple);">up to 1000 words</span>
+    </div>
+
+    <div class="feed" id="essays-feed">
+      <div class="feed-empty" id="essays-empty">
+        <span>No essays yet — be the first to write!</span>
+      </div>
+    </div>
+
+    <div class="compose-area">
+      <div class="compose-row">
+        <div class="field-wrap">
+          <label class="compose-label" for="essay-name">Your name or alias</label>
+          <input class="compose-input" id="essay-name" type="text" placeholder="anonymous" maxlength="40" />
+        </div>
+        <div class="field-wrap">
+          <label class="compose-label" for="essay-title">Title</label>
+          <input class="compose-input" id="essay-title" type="text" placeholder="Give your essay a title..." maxlength="120" />
+        </div>
+      </div>
+      <label class="compose-label" for="essay-body">Your essay</label>
+      <textarea class="compose-textarea" id="essay-body" rows="5" placeholder="What's been on your mind? Write it out..."></textarea>
+      <div class="compose-footer">
+        <span class="counter" id="essay-counter">0 / 1000 words</span>
+        <button class="post-btn" id="essay-post-btn" disabled>Post Essay</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Shower Thoughts -->
+  <section class="panel thoughts-panel">
+    <div class="panel-header">
+      <span class="panel-title" style="color:#c47d10;">Ponders</span>
+    </div>
+
+    <div class="feed" id="thoughts-feed">
+      <div class="feed-empty" id="thoughts-empty">
+        <span>No thoughts yet!</span>
+      </div>
+    </div>
+
+    <div class="thoughts-compose">
+      <label class="compose-label" for="thought-name">Your name or alias</label>
+      <input class="compose-input" id="thought-name" type="text" placeholder="anonymous" maxlength="40"
+        style="margin-bottom:10px;" />
+      <label class="compose-label" for="thought-body">Drop a thought...</label>
+      <textarea class="compose-textarea" id="thought-body" placeholder="What just crossed your mind?"></textarea>
+      <div class="compose-footer">
+        <span class="counter" id="thought-counter">0 / 280</span>
+        <button class="post-btn thought-btn" id="thought-post-btn" disabled>Post</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function timeAgo(iso) {
+    const d = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(d / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
+
+  function initials(name) {
+    return (name || 'A').trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  function wordCount(t) {
+    return t.trim() === '' ? 0 : t.trim().split(/\s+/).length;
+  }
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── ESSAYS ────────────────────────────────────────────────────
+  let essays = [];
+
+  async function fetchEssays() {
+    try {
+      const res = await fetch('/api/essays');
+      essays = await res.json();
+      renderEssays();
+    } catch (e) {
+      console.error('fetchEssays:', e);
+    }
+  }
+
+  function renderEssays() {
+    const feed = $('essays-feed');
+    $('essays-empty').style.display = essays.length ? 'none' : 'flex';
+    feed.querySelectorAll('.essay-card').forEach(el => el.remove());
+
+    essays.forEach(e => {
+      const card = document.createElement('div');
+      card.className = 'essay-card';
+      const wc   = wordCount(e.body);
+      const long = wc > 100;
+
+      card.innerHTML = `
+        <div class="meta">
+          <div class="avatar">${escHtml(initials(e.name))}</div>
+          <div class="meta-info">
+            <div class="meta-name">${escHtml(e.name || 'anonymous')}</div>
+            <div class="meta-time">${timeAgo(e.created_at)}</div>
+          </div>
+          <span class="word-badge">${wc} words</span>
+        </div>
+        <h3>${escHtml(e.title)}</h3>
+        <div class="card-body${long ? ' collapsed' : ''}">${escHtml(e.body)}</div>
+        ${long ? '<button class="read-more">Read more</button>' : ''}
+      `;
+
+      if (long) {
+        const btn  = card.querySelector('.read-more');
+        const body = card.querySelector('.card-body');
+        btn.addEventListener('click', () => {
+          body.classList.toggle('collapsed');
+          btn.textContent = body.classList.contains('collapsed') ? 'Read more' : 'Show less';
+        });
+      }
+
+      feed.appendChild(card);
+    });
+  }
+
+  $('essay-body').addEventListener('input', () => {
+    const wc = wordCount($('essay-body').value);
+    const el = $('essay-counter');
+    el.textContent = `${wc} / 1000 words`;
+    el.className = 'counter' + (wc > 1000 ? ' over' : wc > 850 ? ' warn' : '');
+    $('essay-post-btn').disabled = wc === 0 || wc > 1000;
+  });
+
+  $('essay-post-btn').addEventListener('click', async () => {
+    const title = $('essay-title').value.trim();
+    const body  = $('essay-body').value.trim();
+    const name  = $('essay-name').value.trim() || 'anonymous';
+    if (!body || wordCount(body) > 1000) return;
+
+    $('essay-post-btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/essays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, title, body })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      $('essay-body').value  = '';
+      $('essay-title').value = '';
+      $('essay-body').dispatchEvent(new Event('input'));
+      await fetchEssays();
+      $('essays-feed').scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+      showToast('Something went wrong. Please try again.');
+      $('essay-post-btn').disabled = false;
+    }
+  });
+
+  // ── THOUGHTS ──────────────────────────────────────────────────
+  let thoughts = [];
+
+  async function fetchThoughts() {
+    try {
+      const res = await fetch('/api/thoughts');
+      thoughts = await res.json();
+      renderThoughts();
+    } catch (e) {
+      console.error('fetchThoughts:', e);
+    }
+  }
+
+  function renderThoughts() {
+    const feed = $('thoughts-feed');
+    $('thoughts-empty').style.display = thoughts.length ? 'none' : 'flex';
+    feed.querySelectorAll('.thought-card').forEach(el => el.remove());
+
+    thoughts.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'thought-card';
+      card.innerHTML = `
+        <div class="meta">
+          <div class="avatar">${escHtml(initials(t.name))}</div>
+          <div class="meta-info">
+            <div class="meta-name">${escHtml(t.name || 'anonymous')}</div>
+            <div class="meta-time">${timeAgo(t.created_at)}</div>
+          </div>
+        </div>
+        <div class="thought-body-text">${escHtml(t.body)}</div>
+      `;
+      feed.appendChild(card);
+    });
+  }
+
+  $('thought-body').addEventListener('input', () => {
+    const len = $('thought-body').value.length;
+    const el  = $('thought-counter');
+    el.textContent = `${len} / 280`;
+    el.className = 'counter' + (len > 280 ? ' over' : len > 230 ? ' warn' : '');
+    $('thought-post-btn').disabled = len === 0 || len > 280;
+  });
+
+  $('thought-post-btn').addEventListener('click', async () => {
+    const body = $('thought-body').value.trim();
+    const name = $('thought-name').value.trim() || 'anonymous';
+    if (!body || body.length > 280) return;
+
+    $('thought-post-btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/thoughts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, body })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      $('thought-body').value = '';
+      $('thought-body').dispatchEvent(new Event('input'));
+      await fetchThoughts();
+      $('thoughts-feed').scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+      showToast('Something went wrong. Please try again.');
+      $('thought-post-btn').disabled = false;
+    }
+  });
+
+  // ── SERVER-SENT EVENTS (real-time from other users) ───────────
+  function connectSSE() {
+    const es = new EventSource('/api/events');
+
+    es.addEventListener('essay',   () => fetchEssays());
+    es.addEventListener('thought', () => fetchThoughts());
+
+    es.onerror = () => {
+      es.close();
+      // reconnect after 5 seconds if connection drops
+      setTimeout(connectSSE, 5000);
+    };
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────
+  fetchEssays();
+  fetchThoughts();
+  connectSSE();
+</script>
+</body>
+</html>
