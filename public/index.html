@@ -74,8 +74,44 @@
       background: rgba(255, 240, 249, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 2px solid var(--pink-soft);
+      border-bottom: 4px solid var(--pink-soft);
       box-shadow: 0 2px 20px rgba(244,140,177,0.12);
+    }
+
+    .logo-text {
+      font-family: 'Rubik Wet Paint', cursive;
+      font-size: 2.8rem;
+      letter-spacing: 0.06em;
+      color: #c060b8;
+      -webkit-text-stroke: 2px #7a30a0;
+      text-shadow:
+        3px 3px 0px #a97dd4,
+        5px 5px 0px rgba(169,125,212,0.3),
+        -1px -1px 8px rgba(244,140,177,0.4);
+      transform: rotate(-1.5deg);
+      display: inline-block;
+      user-select: none;
+    }
+
+    .logo-x {
+      color: #f0c830;
+      -webkit-text-stroke: 2px #c09000;
+      text-shadow:
+        3px 3px 0px #e8a820,
+        5px 5px 0px rgba(232,168,32,0.3);
+      margin-left: 4px;
+    }
+
+    .tagline {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      font-style: italic;
+      color: var(--muted);
+      white-space: nowrap;
+      letter-spacing: 0.03em;
     }
 
     .logo-img {
@@ -101,13 +137,13 @@
       overflow: hidden;
     }
 
-    .essays-panel   { flex: 3; border-right: 2px solid var(--pink-soft); }
+    .essays-panel   { flex: 3; border-right: 8px solid var(--pink-soft); }
     .thoughts-panel { flex: 1; background: rgba(255,245,252,0.5); }
 
     /* ── PANEL HEADER ── */
     .panel-header {
       padding: 12px 22px;
-      border-bottom: 2px solid var(--pink-soft);
+      border-bottom: 4px solid var(--pink-soft);
       background: rgba(255,245,252,0.7);
       backdrop-filter: blur(8px);
       display: flex;
@@ -118,7 +154,8 @@
     .panel-title {
       font-family: var(--logo);
       font-size: 1.15rem;
-      letter-spacing: 0.04em;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .pill {
@@ -311,7 +348,7 @@
 
     /* ── COMPOSE AREAS ── */
     .compose-area {
-      border-top: 2px solid var(--pink-soft);
+      border-top: 4px solid var(--pink-soft);
       background: rgba(255,240,249,0.90);
       backdrop-filter: blur(10px);
       padding: 16px 20px;
@@ -405,8 +442,8 @@
       letter-spacing: 0.06em;
       cursor: pointer;
       color: #fff;
-      background: linear-gradient(135deg, #e8709a, #b070d8);
-      box-shadow: 0 4px 14px rgba(200,100,180,0.30);
+      background: linear-gradient(135deg, #d4b0f0, #a97dd4);
+      box-shadow: 0 4px 14px rgba(169,125,212,0.30);
       transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
       text-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
@@ -420,9 +457,9 @@
     .post-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .thought-btn {
-      background: linear-gradient(135deg, #f9d050, #f09a50);
-      box-shadow: 0 4px 14px rgba(240,154,80,0.30);
-      color: #3a2010;
+      background: linear-gradient(135deg, #fde98a, #f9d050);
+      box-shadow: 0 4px 14px rgba(249,208,80,0.30);
+      color: #5a3e00;
       text-shadow: none;
     }
 
@@ -432,7 +469,7 @@
 
     /* ── THOUGHTS COMPOSE ── */
     .thoughts-compose {
-      border-top: 2px solid var(--pink-soft);
+      border-top: 4px solid var(--pink-soft);
       background: rgba(255,240,249,0.90);
       backdrop-filter: blur(10px);
       padding: 14px 16px;
@@ -466,6 +503,7 @@
 
 <header>
   <img class="logo-img" src="logo.png" alt="Ailouros X" />
+  <p class="tagline">"Curiosity didn't kill the monkey.....oh oh ah ah" &mdash; Ruby Dalmer</p>
 </header>
 
 <div class="workspace">
@@ -473,13 +511,13 @@
   <!-- LEFT: Essays -->
   <section class="panel essays-panel">
     <div class="panel-header">
-      <span class="panel-title" style="color:var(--purple)">Essays &amp; Long-form</span>
+      <span class="panel-title" style="color:var(--purple)">Deep Dives</span>
       <span class="pill" style="background:var(--lilac);color:var(--purple);">up to 1000 words</span>
     </div>
 
     <div class="feed" id="essays-feed">
       <div class="feed-empty" id="essays-empty">
-        <span>No essays yet — be the first to write!</span>
+        <span>No yarns yet — be the first to write!</span>
       </div>
     </div>
 
@@ -491,14 +529,14 @@
         </div>
         <div class="field-wrap">
           <label class="compose-label" for="essay-title">Title</label>
-          <input class="compose-input" id="essay-title" type="text" placeholder="Give your essay a title..." maxlength="120" />
+          <input class="compose-input" id="essay-title" type="text" placeholder="Give your yarn a title..." maxlength="120" />
         </div>
       </div>
-      <label class="compose-label" for="essay-body">Your essay</label>
+      <label class="compose-label" for="essay-body">Your yarn</label>
       <textarea class="compose-textarea" id="essay-body" rows="5" placeholder="What's been on your mind? Write it out..."></textarea>
       <div class="compose-footer">
         <span class="counter" id="essay-counter">0 / 1000 words</span>
-        <button class="post-btn" id="essay-post-btn" disabled>Post Essay</button>
+        <button class="post-btn" id="essay-post-btn" disabled>Post</button>
       </div>
     </div>
   </section>
