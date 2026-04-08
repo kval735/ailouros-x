@@ -45,8 +45,8 @@
       --tbtn-grad: #f9d050;
       --tbtn-color: #5a3e00;
       --tbtn-shadow: rgba(249,208,80,0.20);
-      --header-bg: #7C4EBB;
-      --header-text: rgba(255,255,255,0.85);
+      --header-bg: #E8D5F8;
+      --header-text: #411E57;
       --panel-bg: #fff5fa;
       --compose-bg: #fff0f7;
       --thoughts-bg: #fff5fa;
@@ -81,8 +81,8 @@
       --tbtn-grad: #EFB923;
       --tbtn-color: #3A2800;
       --tbtn-shadow: rgba(239,185,35,0.20);
-      --header-bg: #9F5E33;
-      --header-text: rgba(255,255,255,0.85);
+      --header-bg: #FCDBA8;
+      --header-text: #7A5200;
       --panel-bg: #FFFBEB;
       --compose-bg: #FFF8E0;
       --thoughts-bg: #FFFBEB;
@@ -133,8 +133,8 @@
       --tbtn-grad: #A040E8;
       --tbtn-color: #fff;
       --tbtn-shadow: rgba(160,64,232,0.20);
-      --header-bg: #3A0070;
-      --header-text: rgba(255,255,255,0.85);
+      --header-bg: #D8B8FF;
+      --header-text: #2A0860;
       --panel-bg: #F2EAFF;
       --compose-bg: #EDE0FF;
       --thoughts-bg: #F2EAFF;
@@ -212,9 +212,20 @@
       transform: scale(1.1);
     }
 
-    .theme-btn[data-theme="pink"]   { background: #DE5C8F; }
-    .theme-btn[data-theme="gold"]   { background: #EFB923; }
+    .theme-btn[data-theme="pink"]   { background: transparent; width: 38px; height: 38px; overflow: hidden; }
+    .theme-btn[data-theme="gold"]   { background: transparent; width: 38px; height: 38px; overflow: hidden; }
     .theme-btn[data-theme="purple"] { background: #8B30E8; }
+
+    .theme-btn[data-theme="pink"] img,
+    .theme-btn[data-theme="gold"] img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 10%;
+      mix-blend-mode: multiply;
+      display: block;
+      border-radius: 50%;
+    }
 
     .tagline {
       font-size: 0.70rem;
@@ -228,7 +239,7 @@
     .logo-img {
       height: 82px;
       width: auto;
-      mix-blend-mode: normal;
+      mix-blend-mode: multiply;
       user-select: none;
       pointer-events: none;
     }
@@ -419,6 +430,7 @@
     }
 
     .meta-time {
+      font-family: var(--broadway);
       font-size: 0.68rem;
       font-weight: 600;
       color: var(--muted);
@@ -434,7 +446,7 @@
     }
 
     .card-body {
-      font-family: var(--broadway);
+      font-family: var(--ui);
       font-size: 0.87rem;
       line-height: 1.7;
       color: var(--text2);
@@ -451,7 +463,7 @@
     }
 
     .thought-body-text {
-      font-family: var(--broadway);
+      font-family: var(--ui);
       font-size: 0.87rem;
       line-height: 1.7;
       color: var(--text2);
@@ -468,7 +480,7 @@
       cursor: pointer;
       font-size: 0.76rem;
       font-weight: 800;
-      font-family: var(--ui);
+      font-family: var(--broadway);
       padding: 0;
       letter-spacing: 0.04em;
       transition: opacity 0.15s;
@@ -507,7 +519,7 @@
       font-size: 0.78rem;
       font-weight: 700;
       color: var(--text2);
-      font-family: var(--ui);
+      font-family: var(--broadway);
       transition: background 0.15s, border-color 0.15s, transform 0.15s;
       display: flex;
       align-items: center;
@@ -535,7 +547,7 @@
       font-size: 0.76rem;
       font-weight: 700;
       color: var(--muted);
-      font-family: var(--ui);
+      font-family: var(--broadway);
       letter-spacing: 0.02em;
       transition: color 0.15s;
       padding: 4px 0;
@@ -598,7 +610,7 @@
     }
 
     .comment-body {
-      font-family: var(--broadway);
+      font-family: var(--ui);
       font-size: 0.82rem;
       color: var(--text2);
       line-height: 1.55;
@@ -639,7 +651,7 @@
       border-radius: 20px;
       padding: 5px 18px;
       font-size: 0.74rem;
-      font-family: var(--ui);
+      font-family: var(--broadway);
       font-weight: 700;
       cursor: pointer;
       color: #fff;
@@ -702,6 +714,7 @@
 
     .compose-label {
       display: block;
+      font-family: var(--broadway);
       font-size: 0.66rem;
       font-weight: 800;
       letter-spacing: 0.12em;
@@ -717,7 +730,7 @@
       border-radius: 10px;
       color: var(--text);
       padding: 8px 12px;
-      font-family: var(--broadway);
+      font-family: var(--ui);
       font-size: 0.88rem;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -735,7 +748,7 @@
       border-radius: 10px;
       color: var(--text);
       padding: 10px 12px;
-      font-family: var(--broadway);
+      font-family: var(--ui);
       font-size: 0.9rem;
       line-height: 1.65;
       resize: vertical;
@@ -761,7 +774,7 @@
       margin-top: 10px;
     }
 
-    .counter { font-size: 0.7rem; font-weight: 800; color: var(--muted); letter-spacing: 0.06em; }
+    .counter { font-family: var(--broadway); font-size: 0.7rem; font-weight: 800; color: var(--muted); letter-spacing: 0.06em; }
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
@@ -771,7 +784,7 @@
       border-radius: 50px;
       padding: 9px 26px;
       font-size: 0.82rem;
-      font-family: var(--ui);
+      font-family: var(--broadway);
       font-weight: 800;
       letter-spacing: 0.06em;
       cursor: pointer;
@@ -837,8 +850,8 @@
 
 <header>
   <div class="theme-buttons">
-    <button class="theme-btn" data-theme="pink" title="Pink"></button>
-    <button class="theme-btn" data-theme="gold" title="Gold"></button>
+    <button class="theme-btn" data-theme="pink" title="Pink"><img src="r.png" alt="Pink" /></button>
+    <button class="theme-btn" data-theme="gold" title="Gold"><img src="r.png" alt="Gold" /></button>
     <button class="theme-btn" data-theme="purple" title="Purple"></button>
   </div>
   <img class="logo-img" src="fontbolt.png" alt="Ailouros X" />
