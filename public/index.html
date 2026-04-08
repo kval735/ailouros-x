@@ -6,7 +6,7 @@
   <title>Ailouros X</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐒</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Abril+Fatface&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -37,7 +37,7 @@
       --radius: 18px;
       --ui:       'Aptos', 'Segoe UI', sans-serif;
       --serif:    'Aptos', 'Segoe UI', sans-serif;
-      --logo:     'Fredoka One', cursive;
+      --logo:     'Abril Fatface', fantasy;
       --broadway: 'Abril Fatface', fantasy;
 
       --btn-grad: #7C4EBB;
@@ -45,7 +45,8 @@
       --tbtn-grad: #f9d050;
       --tbtn-color: #5a3e00;
       --tbtn-shadow: rgba(249,208,80,0.20);
-      --header-bg: #fff0f7;
+      --header-bg: #7C4EBB;
+      --header-text: rgba(255,255,255,0.85);
       --panel-bg: #fff5fa;
       --compose-bg: #fff0f7;
       --thoughts-bg: #fff5fa;
@@ -80,7 +81,8 @@
       --tbtn-grad: #EFB923;
       --tbtn-color: #3A2800;
       --tbtn-shadow: rgba(239,185,35,0.20);
-      --header-bg: #FFF8E0;
+      --header-bg: #9F5E33;
+      --header-text: rgba(255,255,255,0.85);
       --panel-bg: #FFFBEB;
       --compose-bg: #FFF8E0;
       --thoughts-bg: #FFFBEB;
@@ -131,7 +133,8 @@
       --tbtn-grad: #A040E8;
       --tbtn-color: #fff;
       --tbtn-shadow: rgba(160,64,232,0.20);
-      --header-bg: #EDE0FF;
+      --header-bg: #3A0070;
+      --header-text: rgba(255,255,255,0.85);
       --panel-bg: #F2EAFF;
       --compose-bg: #EDE0FF;
       --thoughts-bg: #F2EAFF;
@@ -169,10 +172,12 @@
       top: 0;
       z-index: 100;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0 32px;
-      height: 105px;
+      gap: 4px;
+      padding: 8px 32px;
+      height: 115px;
       background: var(--header-bg);
       border-bottom: 4px solid var(--pink-soft);
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
@@ -212,21 +217,18 @@
     .theme-btn[data-theme="purple"] { background: #8B30E8; }
 
     .tagline {
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.72rem;
+      font-size: 0.70rem;
       font-style: italic;
-      color: var(--muted);
+      color: var(--header-text, rgba(255,255,255,0.85));
       white-space: nowrap;
       letter-spacing: 0.03em;
+      text-align: center;
     }
 
     .logo-img {
       height: 82px;
       width: auto;
-      mix-blend-mode: multiply;
+      mix-blend-mode: normal;
       user-select: none;
       pointer-events: none;
     }
@@ -234,7 +236,7 @@
     /* ── LAYOUT ── */
     .workspace {
       display: flex;
-      height: calc(100vh - 105px);
+      height: calc(100vh - 115px);
       overflow: hidden;
       position: relative;
       z-index: 1;
@@ -840,7 +842,7 @@
     <button class="theme-btn" data-theme="purple" title="Purple"></button>
   </div>
   <img class="logo-img" src="fontbolt.png" alt="Ailouros X" />
-  <p class="tagline">"Curiosity didn't kill the monkey.....oh oh ah ah" &mdash; Ruby Dalmer</p>
+  <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
 </header>
 
 <div class="workspace">
@@ -983,9 +985,9 @@
 
   function likeEmoji() {
     const t = document.body.dataset.theme;
-    if (t === 'gold')   return '\u{2B50}';
-    if (t === 'purple') return '\u{1F49C}';
-    return '\u{1F34C}';
+    if (t === 'gold')   return '\u{1F34C}';  // banana
+    if (t === 'purple') return '\u{1F49C}';  // purple heart
+    return '\u{2B50}';                         // star (pink theme)
   }
 
   function renderLikes(count, max) {
