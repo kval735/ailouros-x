@@ -156,7 +156,7 @@
     body[data-theme="purple"] .thought-card:nth-child(5n) { --c: #E870C8; --cb: #FFE0F5; }
     body[data-theme="purple"] .thought-card:nth-child(6n) { --c: #7020D0; --cb: #E8D0FF; }
 
-    html, body { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       background: var(--bg);
@@ -171,36 +171,13 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      flex-shrink: 0;
-      display: grid;
-      grid-template-columns: 30% 70%;
-      align-items: end;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      height: 115px;
       background: var(--header-bg);
       border-bottom: 4px solid var(--pink-soft);
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
-    }
-
-    /* ── HEADER LEFT ── */
-    .header-left {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      align-self: center;
-    }
-
-    /* ── HEADER CENTER (absolutely centered over full header) ── */
-    .header-center {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      z-index: 2;
-      pointer-events: none;
     }
 
     /* ── RUBY BUTTON ── */
@@ -209,23 +186,44 @@
       border: none;
       padding: 0;
       cursor: pointer;
-      display: block;
-      line-height: 0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
     }
 
     .ruby-btn img {
-      width: 100%;
-      height: auto;
-      max-height: 35vh;
-      object-fit: contain;
-      object-position: bottom center;
+      height: 115px;
+      width: auto;
       display: block;
     }
 
-    /* ── THEME BUTTONS (purple dot) ── */
+    /* ── HEADER CENTER ── */
+    .header-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
+    }
+
+    /* ── THEME BUTTONS (purple dot, top-right) ── */
+    .theme-buttons {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     .theme-btn {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       border: 3px solid transparent;
       cursor: pointer;
@@ -241,18 +239,21 @@
       transform: scale(1.1);
     }
 
+    .theme-btn[data-theme="pink"]   { background: #DE5C8F; }
+    .theme-btn[data-theme="gold"]   { background: #EFB923; }
     .theme-btn[data-theme="purple"] { background: #8B30E8; }
 
     .tagline {
       font-size: 0.70rem;
       font-style: italic;
       color: var(--header-text, rgba(255,255,255,0.85));
+      white-space: nowrap;
       letter-spacing: 0.03em;
       text-align: center;
     }
 
     .logo-img {
-      height: 70px;
+      height: 82px;
       width: auto;
       mix-blend-mode: multiply;
       user-select: none;
@@ -262,8 +263,7 @@
     /* ── LAYOUT ── */
     .workspace {
       display: flex;
-      flex: 1;
-      min-height: 0;
+      height: calc(100vh - 115px);
       overflow: hidden;
       position: relative;
       z-index: 1;
@@ -865,16 +865,17 @@
 <body>
 
 <header>
-  <div class="header-left">
-    <button class="theme-btn" data-theme="purple" title="Purple"></button>
-  </div>
+  <button class="ruby-btn" id="rubyBtn" title="Switch theme">
+    <img src="r.png" alt="Ruby" />
+  </button>
   <div class="header-center">
     <img class="logo-img" src="fontbolt.png" alt="Ailouros X" />
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
   </div>
-  <button class="ruby-btn" id="rubyBtn" title="Switch theme">
-    <img src="r.png" alt="Ruby" />
-  </button>
+  <div class="theme-buttons">
+    <button class="theme-btn" data-theme="gold" title="Gold"></button>
+    <button class="theme-btn" data-theme="purple" title="Purple"></button>
+  </div>
 </header>
 
 <div class="workspace">
@@ -992,30 +993,19 @@
       document.body.dataset.theme = name;
     }
     localStorage.setItem('theme', name);
-    // purple dot active state
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
-    // ruby button glow based on active pink/gold theme
-    const rubyBtn = document.getElementById('rubyBtn');
-    if (rubyBtn) {
-      if (name === 'pink')       rubyBtn.style.filter = 'drop-shadow(0 0 8px #DE5C8F)';
-      else if (name === 'gold')  rubyBtn.style.filter = 'drop-shadow(0 0 8px #EFB923)';
-      else                       rubyBtn.style.filter = 'none';
-    }
     if (typeof renderEssays === 'function' && typeof essays !== 'undefined' && essays.length) renderEssays();
     if (typeof renderThoughts === 'function' && typeof thoughts !== 'undefined' && thoughts.length) renderThoughts();
   }
 
-  // purple dot button
   document.querySelectorAll('.theme-btn').forEach(b =>
     b.addEventListener('click', () => applyTheme(b.dataset.theme))
   );
 
-  // ruby button toggles between pink and gold
   document.getElementById('rubyBtn').addEventListener('click', () => {
-    const current = localStorage.getItem('theme') || 'pink';
-    applyTheme(current === 'gold' ? 'pink' : 'gold');
+    applyTheme('pink');
   });
 
   applyTheme(localStorage.getItem('theme') || 'pink');
