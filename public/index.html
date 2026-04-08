@@ -199,9 +199,7 @@
       position: absolute;
       left: 0;
       bottom: 0;
-      width: 38%;
       display: flex;
-      justify-content: space-evenly;
       align-items: flex-end;
     }
 
@@ -223,7 +221,7 @@
 
     .theme-btn:hover { opacity: 0.85; }
 
-    .theme-btn.active { filter: drop-shadow(0 0 10px rgba(255,255,255,0.9)) drop-shadow(0 0 4px rgba(255,255,255,0.7)); }
+    .theme-btn.active { filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white); }
 
     .tagline {
       font-size: 0.70rem;
@@ -398,22 +396,6 @@
       margin-bottom: 12px;
     }
 
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--c);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      font-family: var(--ui);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
 
     .meta-info { flex: 1; min-width: 0; }
 
@@ -580,12 +562,6 @@
       gap: 8px;
     }
 
-    .comment-item .avatar {
-      width: 28px;
-      height: 28px;
-      font-size: 0.6rem;
-      flex-shrink: 0;
-    }
 
     .comment-content { flex: 1; min-width: 0; }
 
@@ -947,9 +923,6 @@
     return `${Math.floor(h / 24)}d ago`;
   }
 
-  function initials(name) {
-    return (name || 'A').trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  }
 
   function wordCount(t) {
     return t.trim() === '' ? 0 : t.trim().split(/\s+/).length;
@@ -973,12 +946,6 @@
       document.body.dataset.theme = name;
     }
     localStorage.setItem('theme', name);
-    const logoImg = document.getElementById('logoImg');
-    if (logoImg) {
-      if (name === 'gold')        logoImg.src = 'bananalogo.png';
-      else if (name === 'purple') logoImg.src = 'purplelogo.png';
-      else                        logoImg.src = 'fontbolt.png';
-    }
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
@@ -1051,7 +1018,6 @@
       card.innerHTML = `
         <div class="banana-strip" id="bananas-${e.id}">${renderLikes(e.like_count, 12)}</div>
         <div class="meta">
-          <div class="avatar">${escHtml(initials(e.name))}</div>
           <div class="meta-info">
             <div class="meta-name">${escHtml(e.name || 'anonymous')}</div>
             <div class="meta-time">${timeAgo(e.created_at)}</div>
@@ -1141,7 +1107,6 @@
     if (!list.length) { el.innerHTML = '<div class="comments-empty">No comments yet!</div>'; return; }
     el.innerHTML = list.map(c => `
       <div class="comment-item">
-        <div class="avatar">${escHtml(initials(c.name))}</div>
         <div class="comment-content">
           <div class="comment-meta">
             <span class="comment-name">${escHtml(c.name || 'anonymous')}</span>
@@ -1232,7 +1197,6 @@
       card.innerHTML = `
         <div class="thought-banana-strip" id="tbananas-${t.id}">${renderLikes(t.like_count, 6)}</div>
         <div class="meta">
-          <div class="avatar">${escHtml(initials(t.name))}</div>
           <div class="meta-info">
             <div class="meta-name">${escHtml(t.name || 'anonymous')}</div>
             <div class="meta-time">${timeAgo(t.created_at)}</div>
