@@ -149,6 +149,32 @@ app.post('/api/essays/:id/comments', async (req, res) => {
   res.status(201).json(data);
 });
 
+// ── THOUGHT LIKES ─────────────────────────────────────────────
+app.post('/api/thoughts/:id/like', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+  const { data, error: fetchErr } = await sb
+    .from('thoughts')
+    .select('like_count')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr) return res.status(500).json({ error: fetchErr.message });
+
+  const newCount = (data.like_count || 0) + 1;
+
+  const { error: updateErr } = await sb
+    .from('thoughts')
+    .update({ like_count: newCount })
+    .eq('id', id);
+
+  if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+  broadcast('thought_like', { thought_id: id, like_count: newCount });
+  res.json({ like_count: newCount });
+});
+
 // ── THOUGHTS ───────────────────────────────────────────────────
 app.get('/api/thoughts', async (_req, res) => {
   const { data, error } = await sb
