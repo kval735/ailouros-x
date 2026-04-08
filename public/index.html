@@ -940,6 +940,9 @@
     return t.trim() === '' ? 0 : t.trim().split(/\s+/).length;
   }
 
+  let essays  = [];
+  let thoughts = [];
+
   function showToast(msg) {
     const t = $('toast');
     t.textContent = msg;
@@ -1002,7 +1005,6 @@
   });
 
   // ── ESSAYS ────────────────────────────────────────────────────
-  let essays = [];
 
   async function fetchEssays() {
     try {
@@ -1187,7 +1189,6 @@
   });
 
   // ── THOUGHTS ──────────────────────────────────────────────────
-  let thoughts = [];
 
   async function fetchThoughts() {
     try {
