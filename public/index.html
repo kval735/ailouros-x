@@ -221,7 +221,17 @@
 
     .theme-btn:hover { opacity: 0.85; }
 
-    .theme-btn.active { filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white); }
+    .theme-btn.active {
+      filter:
+        drop-shadow(2px 0 0 white)
+        drop-shadow(-2px 0 0 white)
+        drop-shadow(0 2px 0 white)
+        drop-shadow(0 -2px 0 white)
+        drop-shadow(2px 2px 0 white)
+        drop-shadow(-2px -2px 0 white)
+        drop-shadow(2px -2px 0 white)
+        drop-shadow(-2px 2px 0 white);
+    }
 
     .tagline {
       font-size: 0.70rem;
@@ -396,6 +406,30 @@
       margin-bottom: 12px;
     }
 
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      font-family: var(--ui);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .comment-item .avatar {
+      width: 28px;
+      height: 28px;
+      font-size: 0.6rem;
+      flex-shrink: 0;
+    }
 
     .meta-info { flex: 1; min-width: 0; }
 
@@ -752,6 +786,68 @@
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
+    /* ── AVATAR EMOJI PICKER ── */
+    .avatar-picker-wrap {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .avatar-pick-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s;
+    }
+
+    .avatar-pick-btn:hover { border-color: var(--pink); }
+
+    .avatar-dropdown {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
+      width: 180px;
+      z-index: 300;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+    }
+
+    .avatar-dropdown.open { display: flex; }
+
+    .emoji-opt {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      border-radius: 8px;
+      padding: 3px 5px;
+      transition: background 0.1s;
+      line-height: 1;
+    }
+
+    .emoji-opt:hover { background: var(--bg2); }
+
+    .avatar.is-emoji {
+      background: var(--surface2);
+      font-size: 1.15rem;
+      border: 2px solid var(--border);
+      color: inherit;
+    }
+
     /* ── Buttons ── */
     .post-btn {
       border: none;
@@ -856,6 +952,10 @@
     <div class="compose-drawer" id="compose-drawer">
       <div class="compose-area">
         <div class="compose-row">
+          <div class="avatar-picker-wrap">
+            <button class="avatar-pick-btn" id="essay-avatar-btn" title="Pick avatar"></button>
+            <div class="avatar-dropdown" id="essay-avatar-dd"></div>
+          </div>
           <div class="field-wrap">
             <label class="compose-label" for="essay-name">Your name or alias</label>
             <input class="compose-input" id="essay-name" type="text" placeholder="anonymous" maxlength="40" />
@@ -888,9 +988,16 @@
     </div>
 
     <div class="thoughts-compose">
-      <label class="compose-label" for="thought-name">Your name or alias</label>
-      <input class="compose-input" id="thought-name" type="text" placeholder="anonymous" maxlength="40"
-        style="margin-bottom:10px;" />
+      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
+        <div class="avatar-picker-wrap">
+          <button class="avatar-pick-btn" id="thought-avatar-btn" title="Pick avatar"></button>
+          <div class="avatar-dropdown" id="thought-avatar-dd"></div>
+        </div>
+        <div class="field-wrap" style="flex:1;margin:0;">
+          <label class="compose-label" for="thought-name">Your name or alias</label>
+          <input class="compose-input" id="thought-name" type="text" placeholder="anonymous" maxlength="40" />
+        </div>
+      </div>
       <label class="compose-label" for="thought-body">Drop a thought...</label>
       <textarea class="compose-textarea" id="thought-body" placeholder="What just crossed your mind?"></textarea>
       <div class="compose-footer">
@@ -930,6 +1037,52 @@
 
   let essays  = [];
   let thoughts = [];
+
+  function initials(name) {
+    return (name || 'A').trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // ── AVATAR EMOJI PICKER ───────────────────────────────────────
+  const EMOJIS = ['🐒','🦊','🐱','🐸','🦋','🌸','🔥','👾','🎭','🦁','🌙','⭐'];
+
+  function avatarDiv(item) {
+    if (item.avatar) return `<div class="avatar is-emoji">${item.avatar}</div>`;
+    return `<div class="avatar">${escHtml(initials(item.name))}</div>`;
+  }
+
+  function buildPicker(btnEl, ddEl) {
+    ddEl.innerHTML = EMOJIS.map(e =>
+      `<button class="emoji-opt" data-emoji="${e}">${e}</button>`
+    ).join('');
+    const saved = localStorage.getItem('avatarEmoji') || EMOJIS[0];
+    btnEl.textContent = saved;
+    ddEl.querySelectorAll('.emoji-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const emoji = opt.dataset.emoji;
+        localStorage.setItem('avatarEmoji', emoji);
+        syncAllPickers(emoji);
+        ddEl.classList.remove('open');
+      });
+    });
+    btnEl.addEventListener('click', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.avatar-dropdown').forEach(d => {
+        if (d !== ddEl) d.classList.remove('open');
+      });
+      ddEl.classList.toggle('open');
+    });
+  }
+
+  function syncAllPickers(emoji) {
+    document.querySelectorAll('.avatar-pick-btn').forEach(b => b.textContent = emoji);
+  }
+
+  document.addEventListener('click', () =>
+    document.querySelectorAll('.avatar-dropdown').forEach(d => d.classList.remove('open'))
+  );
+
+  buildPicker($('essay-avatar-btn'), $('essay-avatar-dd'));
+  buildPicker($('thought-avatar-btn'), $('thought-avatar-dd'));
 
   function showToast(msg) {
     const t = $('toast');
@@ -1018,6 +1171,7 @@
       card.innerHTML = `
         <div class="banana-strip" id="bananas-${e.id}">${renderLikes(e.like_count, 12)}</div>
         <div class="meta">
+          ${avatarDiv(e)}
           <div class="meta-info">
             <div class="meta-name">${escHtml(e.name || 'anonymous')}</div>
             <div class="meta-time">${timeAgo(e.created_at)}</div>
@@ -1038,7 +1192,13 @@
         <div class="comments-section" id="cs-${e.id}" style="display:none;">
           <div class="comments-list" id="cl-${e.id}"></div>
           <div class="comment-compose">
-            <input type="text" placeholder="Your name..." id="cn-${e.id}" maxlength="40" />
+            <div style="display:flex;align-items:flex-end;gap:6px;">
+              <div class="avatar-picker-wrap">
+                <button class="avatar-pick-btn comment-avatar-btn" title="Pick avatar"></button>
+                <div class="avatar-dropdown comment-avatar-dd"></div>
+              </div>
+              <input type="text" placeholder="Your name..." id="cn-${e.id}" maxlength="40" style="flex:1;" />
+            </div>
             <textarea placeholder="Add a comment..." id="cb-${e.id}" maxlength="500"></textarea>
             <button class="comment-post-btn" data-id="${e.id}">Post Comment</button>
           </div>
@@ -1072,6 +1232,10 @@
         const id = parseInt(ev.currentTarget.dataset.id);
         postComment(id, $(`cn-${id}`).value.trim(), $(`cb-${id}`).value.trim(), ev.currentTarget);
       });
+
+      const cBtn = card.querySelector('.comment-avatar-btn');
+      const cDd  = card.querySelector('.comment-avatar-dd');
+      if (cBtn && cDd) buildPicker(cBtn, cDd);
 
       feed.appendChild(card);
     });
@@ -1107,6 +1271,7 @@
     if (!list.length) { el.innerHTML = '<div class="comments-empty">No comments yet!</div>'; return; }
     el.innerHTML = list.map(c => `
       <div class="comment-item">
+        ${avatarDiv(c)}
         <div class="comment-content">
           <div class="comment-meta">
             <span class="comment-name">${escHtml(c.name || 'anonymous')}</span>
@@ -1125,7 +1290,7 @@
       const r = await fetch(`/api/essays/${eid}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, body })
+        body: JSON.stringify({ name, body, avatar: localStorage.getItem('avatarEmoji') || null })
       });
       if (!r.ok) throw 0;
       $(`cb-${eid}`).value = '';
@@ -1158,7 +1323,7 @@
       const r = await fetch('/api/essays', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, title, body })
+        body: JSON.stringify({ name, title, body, avatar: localStorage.getItem('avatarEmoji') || null })
       });
       if (!r.ok) throw 0;
       $('essay-body').value = '';
@@ -1197,6 +1362,7 @@
       card.innerHTML = `
         <div class="thought-banana-strip" id="tbananas-${t.id}">${renderLikes(t.like_count, 6)}</div>
         <div class="meta">
+          ${avatarDiv(t)}
           <div class="meta-info">
             <div class="meta-name">${escHtml(t.name || 'anonymous')}</div>
             <div class="meta-time">${timeAgo(t.created_at)}</div>
@@ -1237,7 +1403,7 @@
       const r = await fetch('/api/thoughts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, body })
+        body: JSON.stringify({ name, body, avatar: localStorage.getItem('avatarEmoji') || null })
       });
       if (!r.ok) throw 0;
       $('thought-body').value = '';

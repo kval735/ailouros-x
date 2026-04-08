@@ -57,7 +57,7 @@ app.get('/api/essays', async (_req, res) => {
 });
 
 app.post('/api/essays', async (req, res) => {
-  const { name, title, body } = req.body;
+  const { name, title, body, avatar } = req.body;
 
   if (!body || typeof body !== 'string') {
     return res.status(400).json({ error: 'body is required' });
@@ -71,9 +71,10 @@ app.post('/api/essays', async (req, res) => {
   const { data, error } = await sb
     .from('essays')
     .insert({
-      name:  (name  || 'anonymous').slice(0, 40),
-      title: (title || 'Untitled').slice(0, 120),
-      body:  body.slice(0, 10000)
+      name:   (name  || 'anonymous').slice(0, 40),
+      title:  (title || 'Untitled').slice(0, 120),
+      body:   body.slice(0, 10000),
+      avatar: avatar || null
     })
     .select()
     .single();
@@ -129,7 +130,7 @@ app.post('/api/essays/:id/comments', async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
 
-  const { name, body } = req.body;
+  const { name, body, avatar } = req.body;
   if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
   if (body.length > 500) return res.status(400).json({ error: 'comment too long' });
 
@@ -137,8 +138,9 @@ app.post('/api/essays/:id/comments', async (req, res) => {
     .from('comments')
     .insert({
       essay_id: id,
-      name: (name || 'anonymous').slice(0, 40),
-      body: body.slice(0, 500)
+      name:     (name || 'anonymous').slice(0, 40),
+      body:     body.slice(0, 500),
+      avatar:   avatar || null
     })
     .select()
     .single();
@@ -187,7 +189,7 @@ app.get('/api/thoughts', async (_req, res) => {
 });
 
 app.post('/api/thoughts', async (req, res) => {
-  const { name, body } = req.body;
+  const { name, body, avatar } = req.body;
 
   if (!body || typeof body !== 'string') {
     return res.status(400).json({ error: 'body is required' });
@@ -199,8 +201,9 @@ app.post('/api/thoughts', async (req, res) => {
   const { data, error } = await sb
     .from('thoughts')
     .insert({
-      name: (name || 'anonymous').slice(0, 40),
-      body: body.slice(0, 280)
+      name:   (name || 'anonymous').slice(0, 40),
+      body:   body.slice(0, 280),
+      avatar: avatar || null
     })
     .select()
     .single();
