@@ -3,3 +3,5 @@ Kg2jKyUFIzqaWhTP
 I'm continuing work on Ailouros X, a forum app built with Express + Supabase, deployed on Render at ailourosx.com"
 
 Make it that when someone types their name, there is a picture of them that shows up
+
+evetually, each post can hvae a reply and a like button, which is a banana, like a post can have 3 bananas lined up

@@ -22,7 +22,6 @@ app.get('/api/events', (req, res) => {
   res.setHeader('Connection',    'keep-alive');
   res.flushHeaders();
 
-  // heartbeat every 25s to keep the connection alive through proxies
   const hb = setInterval(() => res.write(': heartbeat\n\n'), 25000);
   clients.add(res);
 
@@ -39,13 +38,22 @@ function broadcast(event, data) {
 
 // ── ESSAYS ─────────────────────────────────────────────────────
 app.get('/api/essays', async (_req, res) => {
-  const { data, error } = await sb
+  const { data: essays, error } = await sb
     .from('essays')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+
+  // Attach comment counts
+  const { data: commentRows } = await sb.from('comments').select('essay_id');
+  const countMap = {};
+  (commentRows || []).forEach(c => {
+    countMap[c.essay_id] = (countMap[c.essay_id] || 0) + 1;
+  });
+
+  const result = essays.map(e => ({ ...e, comment_count: countMap[e.id] || 0 }));
+  res.json(result);
 });
 
 app.post('/api/essays', async (req, res) => {
@@ -73,6 +81,71 @@ app.post('/api/essays', async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
 
   broadcast('essay', data);
+  res.status(201).json(data);
+});
+
+// ── LIKES ──────────────────────────────────────────────────────
+app.post('/api/essays/:id/like', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+  const { data, error: fetchErr } = await sb
+    .from('essays')
+    .select('like_count')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr) return res.status(500).json({ error: fetchErr.message });
+
+  const newCount = (data.like_count || 0) + 1;
+
+  const { error: updateErr } = await sb
+    .from('essays')
+    .update({ like_count: newCount })
+    .eq('id', id);
+
+  if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+  broadcast('like', { essay_id: id, like_count: newCount });
+  res.json({ like_count: newCount });
+});
+
+// ── COMMENTS ───────────────────────────────────────────────────
+app.get('/api/essays/:id/comments', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+  const { data, error } = await sb
+    .from('comments')
+    .select('*')
+    .eq('essay_id', id)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post('/api/essays/:id/comments', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+  const { name, body } = req.body;
+  if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
+  if (body.length > 500) return res.status(400).json({ error: 'comment too long' });
+
+  const { data, error } = await sb
+    .from('comments')
+    .insert({
+      essay_id: id,
+      name: (name || 'anonymous').slice(0, 40),
+      body: body.slice(0, 500)
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  broadcast('comment', { essay_id: id });
   res.status(201).json(data);
 });
 
