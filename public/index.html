@@ -172,7 +172,7 @@
       align-items: center;
       justify-content: center;
       padding: 0 32px;
-      height: 90px;
+      height: 105px;
       background: var(--header-bg);
       border-bottom: 4px solid var(--pink-soft);
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
@@ -234,7 +234,7 @@
     /* ── LAYOUT ── */
     .workspace {
       display: flex;
-      height: calc(100vh - 90px);
+      height: calc(100vh - 105px);
       overflow: hidden;
       position: relative;
       z-index: 1;
@@ -958,8 +958,8 @@
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
-    if (essays.length) renderEssays();
-    if (thoughts.length) renderThoughts();
+    if (typeof renderEssays === 'function' && typeof essays !== 'undefined' && essays.length) renderEssays();
+    if (typeof renderThoughts === 'function' && typeof thoughts !== 'undefined' && thoughts.length) renderThoughts();
   }
 
   document.querySelectorAll('.theme-btn').forEach(b =>
