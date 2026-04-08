@@ -870,7 +870,7 @@
     <img src="r.png" alt="Ruby" />
   </button>
   <div class="header-center">
-    <img class="logo-img" src="fontbolt.png" alt="Ailouros X" />
+    <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
   </div>
   <div class="theme-buttons">
@@ -994,6 +994,12 @@
       document.body.dataset.theme = name;
     }
     localStorage.setItem('theme', name);
+    const logoImg = document.getElementById('logoImg');
+    if (logoImg) {
+      if (name === 'gold')        logoImg.src = 'bananalogo.png';
+      else if (name === 'purple') logoImg.src = 'purplelogo.png';
+      else                        logoImg.src = 'fontbolt.png';
+    }
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
