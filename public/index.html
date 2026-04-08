@@ -180,23 +180,6 @@
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
     }
 
-    /* ── RUBY BUTTON ── */
-    .ruby-btn {
-      background: transparent;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      flex-shrink: 0;
-      display: flex;
-      align-items: flex-end;
-    }
-
-    .ruby-btn img {
-      height: 92px;
-      width: auto;
-      display: block;
-    }
-
     /* ── HEADER CENTER ── */
     .header-center {
       position: absolute;
@@ -211,38 +194,35 @@
       mix-blend-mode: multiply;
     }
 
-    /* ── THEME BUTTONS (purple dot, top-right) ── */
+    /* ── THEME BUTTONS (mascots, right side) ── */
     .theme-buttons {
       position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
+      left: 0;
+      bottom: 0;
       display: flex;
-      gap: 8px;
-      align-items: center;
+      gap: 0;
+      align-items: flex-end;
     }
 
     .theme-btn {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+      background: transparent;
+      border: none;
       padding: 0;
+      cursor: pointer;
+      display: block;
+      line-height: 0;
+      transition: opacity 0.15s, filter 0.15s;
     }
 
-    .theme-btn:hover { transform: scale(1.2); }
-
-    .theme-btn.active {
-      border-color: var(--text);
-      box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
-      transform: scale(1.1);
+    .theme-btn img {
+      height: 92px;
+      width: auto;
+      display: block;
     }
 
-    .theme-btn[data-theme="pink"]   { background: #DE5C8F; }
-    .theme-btn[data-theme="gold"]   { background: #EFB923; }
-    .theme-btn[data-theme="purple"] { background: #8B30E8; }
+    .theme-btn:hover { opacity: 0.85; }
+
+    .theme-btn.active { filter: drop-shadow(0 0 6px rgba(0,0,0,0.35)); }
 
     .tagline {
       font-size: 0.70rem;
@@ -866,16 +846,14 @@
 <body>
 
 <header>
-  <button class="ruby-btn" id="rubyBtn" title="Switch theme">
-    <img src="r.png" alt="Ruby" />
-  </button>
   <div class="header-center">
     <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
   </div>
   <div class="theme-buttons">
-    <button class="theme-btn" data-theme="gold" title="Gold"></button>
-    <button class="theme-btn" data-theme="purple" title="Purple"></button>
+    <button class="theme-btn" id="rubyBtn" data-theme="pink" title="Pink"><img src="r.png" alt="Ruby" /></button>
+    <button class="theme-btn" data-theme="gold" title="Gold"><img src="k.png" alt="Gold" /></button>
+    <button class="theme-btn" data-theme="purple" title="Purple"><img src="i.png" alt="Purple" /></button>
   </div>
 </header>
 
@@ -1010,10 +988,6 @@
   document.querySelectorAll('.theme-btn').forEach(b =>
     b.addEventListener('click', () => applyTheme(b.dataset.theme))
   );
-
-  document.getElementById('rubyBtn').addEventListener('click', () => {
-    applyTheme('pink');
-  });
 
   applyTheme(localStorage.getItem('theme') || 'pink');
 
