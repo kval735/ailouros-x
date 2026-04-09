@@ -784,27 +784,37 @@
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
-    /* ── GRAFFITI WALL BUTTON ── */
-    .wall-btn {
+    /* ── HEADER RIGHT BUTTONS ── */
+    .header-btns {
       position: absolute;
-      top: 14px;
-      right: 16px;
+      right: 12px;
+      top: 8px;
+      bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .header-action-btn {
+      flex: 1;
       background: var(--purple);
       color: #fff;
       border: none;
-      border-radius: 20px;
-      padding: 6px 14px;
+      border-radius: 12px;
+      padding: 0 16px;
       font-family: var(--broadway);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       cursor: pointer;
-      z-index: 10;
-      transition: transform 0.15s, opacity 0.15s;
       letter-spacing: 0.04em;
+      white-space: nowrap;
+      transition: transform 0.15s, opacity 0.15s;
     }
-    .wall-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .header-action-btn:hover { transform: scale(1.04); opacity: 0.92; }
+    .header-action-btn.info-btn { background: var(--pink); }
 
-    /* ── GRAFFITI WALL MODAL ── */
-    .wall-overlay {
+    /* ── SHARED MODAL STYLES ── */
+    .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
@@ -813,49 +823,74 @@
       align-items: center;
       justify-content: center;
     }
-    .wall-overlay.open { display: flex; }
+    .modal-overlay.open { display: flex; }
 
-    .wall-modal {
-      background: #fff;
-      border-radius: 18px;
-      padding: 18px;
+    .modal-box {
+      background: #f5f0ff;
+      border-radius: 20px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-      width: 90vw;
-      max-width: 960px;
+      gap: 12px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.35);
+      width: 94vw;
+      max-width: 1100px;
     }
 
-    .wall-header {
+    .modal-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .wall-title {
+    .modal-title {
       font-family: var(--broadway);
       font-size: 1.1rem;
       color: var(--text);
     }
 
-    .wall-close {
+    .modal-close {
       background: none;
       border: none;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       cursor: pointer;
       color: var(--muted);
       line-height: 1;
     }
-    .wall-close:hover { color: var(--text); }
+    .modal-close:hover { color: var(--text); }
+
+    /* ── WHITEBOARD FRAME ── */
+    .whiteboard-frame {
+      background: #7B4F2E;
+      border-radius: 10px;
+      padding: 14px 14px 32px 14px;
+      box-shadow:
+        inset 0 3px 6px rgba(0,0,0,0.35),
+        inset 0 -2px 4px rgba(255,255,255,0.1),
+        0 6px 20px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    /* chalk tray */
+    .whiteboard-frame::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      left: 14px;
+      right: 14px;
+      height: 12px;
+      background: #5a3820;
+      border-radius: 4px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
 
     #wallCanvas {
-      border-radius: 10px;
-      border: 2px solid var(--border);
+      border-radius: 6px;
       cursor: crosshair;
       display: block;
       width: 100%;
       touch-action: none;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
     }
 
     .wall-footer {
@@ -863,6 +898,15 @@
       font-size: 0.7rem;
       color: var(--muted);
       text-align: center;
+    }
+
+    /* ── INFO MODAL ── */
+    .info-content {
+      font-family: var(--ui);
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 10px 4px;
     }
 
     /* ── AVATAR EMOJI PICKER ── */
@@ -998,19 +1042,37 @@
 <body>
 
 <!-- Graffiti Wall Modal -->
-<div class="wall-overlay" id="wallOverlay">
-  <div class="wall-modal">
-    <div class="wall-header">
-      <span class="wall-title">🖊️ The Wall</span>
-      <button class="wall-close" id="wallClose">&times;</button>
+<div class="modal-overlay" id="wallOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">✏️ The Wall</span>
+      <button class="modal-close" id="wallClose">&times;</button>
     </div>
-    <canvas id="wallCanvas" height="500"></canvas>
-    <div class="wall-footer">Draw anything — it stays forever ✦ refresh to see others</div>
+    <div class="whiteboard-frame">
+      <canvas id="wallCanvas" height="560"></canvas>
+    </div>
+    <div class="wall-footer">Draw anything — it stays forever ✦ reload to see others' drawings</div>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal-overlay" id="infoOverlay">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-header">
+      <span class="modal-title">DA FAQ?</span>
+      <button class="modal-close" id="infoClose">&times;</button>
+    </div>
+    <div class="info-content">
+      <p>More info coming soon...</p>
+    </div>
   </div>
 </div>
 
 <header>
-  <button class="wall-btn" id="wallBtn">✏️ The Wall</button>
+  <div class="header-btns">
+    <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
+    <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
+  </div>
   <div class="header-center">
     <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
@@ -1555,6 +1617,11 @@
 
   // ── GRAFFITI WALL ─────────────────────────────────────────────
   const wallOverlay = $('wallOverlay');
+  const infoOverlay = $('infoOverlay');
+
+  $('infoBtn').addEventListener('click',  () => infoOverlay.classList.add('open'));
+  $('infoClose').addEventListener('click', () => infoOverlay.classList.remove('open'));
+  infoOverlay.addEventListener('click', e => { if (e.target === infoOverlay) infoOverlay.classList.remove('open'); });
   const wallCanvas  = $('wallCanvas');
   const ctx         = wallCanvas.getContext('2d');
   const CANVAS_W    = 1200;
@@ -1652,9 +1719,7 @@
 
   $('wallClose').addEventListener('click', () => wallOverlay.classList.remove('open'));
 
-  wallOverlay.addEventListener('click', e => {
-    if (e.target === wallOverlay) wallOverlay.classList.remove('open');
-  });
+  wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
 </script>
 </body>
 </html>
