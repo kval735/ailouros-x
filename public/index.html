@@ -10,29 +10,29 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── THEME: GLAM PINK (default) ── */
+    /* ── THEME: PINK (default) ── */
     :root {
-      --bg:        #FDE4F2;
-      --bg2:       #FAD0E8;
-      --surface:   #FFF5FC;
-      --surface2:  #FFEAF8;
-      --border:    #F0A0D0;
+      --bg:        #fce8f0;
+      --bg2:       #f9dde9;
+      --surface:   #fff5f9;
+      --surface2:  #ffeef5;
+      --border:    #f0c8dd;
 
-      --text:      #4A0E3C;
-      --text2:     #9C1060;
-      --muted:     #C06090;
+      --text:      #411E57;
+      --text2:     #872D72;
+      --muted:     #b8849e;
 
-      --pink:      #E8186A;
-      --pink-soft: #F080B0;
-      --rose:      #E8186A;
-      --lavender:  #C8A0F0;
-      --lilac:     #EAD0FF;
-      --purple:    #8040C8;
-      --yellow:    #FFE060;
-      --peach:     #FFB880;
-      --mint:      #90E8C0;
-      --sky:       #90D0F8;
-      --coral:     #FF8890;
+      --pink:      #DE5C8F;
+      --pink-soft: #EDABBE;
+      --rose:      #DE5C8F;
+      --lavender:  #c9aee8;
+      --lilac:     #dfc5f5;
+      --purple:    #7C4EBB;
+      --yellow:    #f9e07a;
+      --peach:     #f9c497;
+      --mint:      #a8e6c8;
+      --sky:       #b0d9f5;
+      --coral:     #f5a09a;
 
       --radius: 18px;
       --ui:       'Aptos', 'Segoe UI', sans-serif;
@@ -40,49 +40,130 @@
       --logo:     'Abril Fatface', fantasy;
       --broadway: 'Abril Fatface', fantasy;
 
-      --btn-grad:   #E8186A;
-      --btn-shadow: rgba(232,24,106,0.25);
-      --tbtn-grad:  #FFE060;
+      --btn-grad: #7C4EBB;
+      --btn-shadow: rgba(124,78,187,0.20);
+      --tbtn-grad: #f9d050;
       --tbtn-color: #5a3e00;
-      --tbtn-shadow: rgba(255,224,96,0.25);
-      --header-bg:  #FFD0E8;
-      --header-text: #4A0E3C;
-      --panel-bg:   #FFF5FC;
-      --compose-bg: #FFF0FA;
-      --thoughts-bg:#FFF5FC;
+      --tbtn-shadow: rgba(249,208,80,0.20);
+      --header-bg: #E8D5F8;
+      --header-text: #411E57;
+      --panel-bg: #fff5fa;
+      --compose-bg: #fff0f7;
+      --thoughts-bg: #fff5fa;
     }
 
-    /* ── GLAM SHIMMER + SPARKLE on pink/default header ── */
-    @keyframes glam-shimmer {
+    /* ── PINK THEME: GLAM EFFECTS ── */
+
+    @keyframes pink-shimmer {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    @keyframes glam-sparkle {
-      0%   { opacity: 0.2; }
-      100% { opacity: 0.65; }
+    @keyframes pink-glitter {
+      0%   { opacity: 0.12; }
+      50%  { opacity: 0.55; }
+      100% { opacity: 0.12; }
     }
 
+    @keyframes card-sweep {
+      0%   { transform: translateX(-150%); }
+      100% { transform: translateX(350%); }
+    }
+
+    /* 1. Shimmer gradient on header */
     body:not([data-theme]) header {
-      background: linear-gradient(120deg, #FFD0E8, #FFC0D8, #FFE8A8, #FFC8E0, #FFD0E8) !important;
+      background: linear-gradient(120deg, #F0C8E8, #FFD9A8, #ECC0F0, #FFB8D8, #F0D0E8) !important;
       background-size: 400% 400% !important;
-      animation: glam-shimmer 5s ease infinite;
+      animation: pink-shimmer 6s ease infinite;
     }
 
+    /* 2. Glitter dots on header */
     body:not([data-theme]) header::before {
       content: '';
       position: absolute;
       inset: 0;
       background-image:
-        radial-gradient(circle, rgba(255,215,0,0.9) 1.5px, transparent 1.5px),
-        radial-gradient(circle, rgba(255,255,255,0.95) 1px, transparent 1px),
-        radial-gradient(circle, rgba(255,140,190,0.7) 1px, transparent 1px);
-      background-size: 44px 44px, 27px 27px, 36px 36px;
-      background-position: 8px 8px, 13px 20px, 22px 4px;
-      animation: glam-sparkle 2.5s ease-in-out infinite alternate;
+        radial-gradient(circle, rgba(255,215,0,0.92) 1.5px, transparent 1.5px),
+        radial-gradient(circle, rgba(255,255,255,0.98) 1px,   transparent 1px),
+        radial-gradient(circle, rgba(255,160,200,0.75) 1px,  transparent 1px);
+      background-size: 46px 46px, 28px 28px, 37px 37px;
+      background-position: 8px 8px, 14px 21px, 23px 5px;
+      animation: pink-glitter 2.2s ease-in-out infinite;
       pointer-events: none;
       z-index: 0;
+    }
+
+    /* 3. Metallic gold on logo + panel titles */
+    body:not([data-theme]) .logo-img {
+      filter: sepia(0.45) hue-rotate(-20deg) saturate(2.5) brightness(1.15);
+    }
+
+    body:not([data-theme]) .panel-title {
+      background: linear-gradient(135deg, #B5860D, #FFD700, #C8960A, #FFE680, #B5860D);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: pink-shimmer 4s linear infinite;
+    }
+
+    /* 4. Shimmer sweep across cards */
+    body:not([data-theme]) .essay-card,
+    body:not([data-theme]) .thought-card { overflow: hidden; }
+
+    body:not([data-theme]) .essay-card::after,
+    body:not([data-theme]) .thought-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
+      animation: card-sweep 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    body:not([data-theme]) .essay-card:nth-child(2n)::after  { animation-delay: 0.6s; }
+    body:not([data-theme]) .essay-card:nth-child(3n)::after  { animation-delay: 1.2s; }
+    body:not([data-theme]) .essay-card:nth-child(4n)::after  { animation-delay: 1.8s; }
+    body:not([data-theme]) .thought-card:nth-child(2n)::after { animation-delay: 0.4s; }
+    body:not([data-theme]) .thought-card:nth-child(3n)::after { animation-delay: 0.8s; }
+
+    /* ── THEME: GLAM (placeholder — same as pink for now) ── */
+    body[data-theme="glam"] {
+      --bg:        #fce8f0;
+      --bg2:       #f9dde9;
+      --surface:   #fff5f9;
+      --surface2:  #ffeef5;
+      --border:    #f0c8dd;
+
+      --text:      #411E57;
+      --text2:     #872D72;
+      --muted:     #b8849e;
+
+      --pink:      #DE5C8F;
+      --pink-soft: #EDABBE;
+      --rose:      #DE5C8F;
+      --lavender:  #c9aee8;
+      --lilac:     #dfc5f5;
+      --purple:    #7C4EBB;
+      --yellow:    #f9e07a;
+      --peach:     #f9c497;
+      --mint:      #a8e6c8;
+      --sky:       #b0d9f5;
+      --coral:     #f5a09a;
+
+      --btn-grad: #7C4EBB;
+      --btn-shadow: rgba(124,78,187,0.20);
+      --tbtn-grad: #f9d050;
+      --tbtn-color: #5a3e00;
+      --tbtn-shadow: rgba(249,208,80,0.20);
+      --header-bg: #E8D5F8;
+      --header-text: #411E57;
+      --panel-bg: #fff5fa;
+      --compose-bg: #fff0f7;
+      --thoughts-bg: #fff5fa;
     }
 
     /* ── THEME: GOLD ── */
@@ -817,16 +898,44 @@
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
-    /* ── HEADER RIGHT BUTTONS ── */
-    .header-btns {
+    /* ── HEADER RIGHT GROUP ── */
+    .header-right-group {
       position: absolute;
       right: 12px;
-      top: 18px;
-      bottom: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .glam-circle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.6);
+      background: linear-gradient(135deg, #DE5C8F, #7C4EBB);
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+    .glam-circle-btn:hover { transform: scale(1.1); }
+    .glam-circle-btn.active {
+      box-shadow: 0 0 0 3px white, 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    .header-btns {
       display: flex;
       flex-direction: column;
       gap: 5px;
-      z-index: 10;
+      height: 79px;
     }
 
     .header-action-btn {
@@ -845,14 +954,6 @@
     }
     .header-action-btn:hover { transform: scale(1.04); opacity: 0.92; }
     .header-action-btn.info-btn { background: var(--pink); }
-    .header-action-btn.glam-btn {
-      background: linear-gradient(135deg, #E8186A, #D4A017, #E8186A);
-      background-size: 200% 200%;
-      animation: glam-shimmer 3s ease infinite;
-    }
-    .header-action-btn.glam-btn.active {
-      box-shadow: 0 0 0 2px white, 0 0 10px rgba(255,215,0,0.7);
-    }
 
     /* ── SHARED MODAL STYLES ── */
     .modal-overlay {
@@ -1107,10 +1208,12 @@
 </div>
 
 <header>
-  <div class="header-btns">
-    <button class="header-action-btn glam-btn" id="glamBtn">✨ Glam</button>
-    <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
-    <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
+  <div class="header-right-group">
+    <button class="glam-circle-btn" id="glamBtn" title="Glam">✨</button>
+    <div class="header-btns">
+      <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
+      <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
+    </div>
   </div>
   <div class="header-center">
     <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
@@ -1296,7 +1399,7 @@
       b.classList.toggle('active', b.dataset.theme === name)
     );
     const glamBtn = document.getElementById('glamBtn');
-    if (glamBtn) glamBtn.classList.toggle('active', name === 'pink');
+    if (glamBtn) glamBtn.classList.toggle('active', name === 'glam');
     if (typeof renderEssays === 'function' && typeof essays !== 'undefined' && essays.length) renderEssays();
     if (typeof renderThoughts === 'function' && typeof thoughts !== 'undefined' && thoughts.length) renderThoughts();
   }
@@ -1305,7 +1408,7 @@
     b.addEventListener('click', () => applyTheme(b.dataset.theme))
   );
 
-  document.getElementById('glamBtn').addEventListener('click', () => applyTheme('pink'));
+  document.getElementById('glamBtn').addEventListener('click', () => applyTheme('glam'));
 
   applyTheme(localStorage.getItem('theme') || 'pink');
 
