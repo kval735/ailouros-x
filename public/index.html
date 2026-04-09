@@ -260,6 +260,7 @@
       bottom: 0;
       display: flex;
       align-items: flex-end;
+      gap: 5mm;
     }
 
     .theme-btn {
@@ -878,23 +879,29 @@
     }
 
     .glam-circle-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.6);
-      background: linear-gradient(135deg, #DE5C8F, #7C4EBB);
-      color: #fff;
-      font-size: 1.1rem;
+      background: transparent;
+      border: none;
+      padding: 0;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s, box-shadow 0.15s;
+      display: block;
+      line-height: 0;
+      transition: filter 0.2s;
       flex-shrink: 0;
     }
-    .glam-circle-btn:hover { transform: scale(1.1); }
+    .glam-circle-btn img {
+      height: 92px;
+      width: auto;
+      display: block;
+    }
+    .glam-circle-btn:hover { opacity: 0.85; }
     .glam-circle-btn.active {
-      box-shadow: 0 0 0 3px white, 0 0 10px rgba(255,255,255,0.5);
+      filter:
+        drop-shadow(1px 0 0 white)
+        drop-shadow(-1px 0 0 white)
+        drop-shadow(0 -1px 0 white)
+        drop-shadow(-1px -1px 0 white)
+        drop-shadow(1px -1px 0 white)
+        drop-shadow(0 -2px 5px rgba(255,255,255,0.85));
     }
 
     .header-btns {
@@ -1201,7 +1208,7 @@
 
 <header>
   <div class="header-right-group">
-    <button class="glam-circle-btn" id="glamBtn" title="Glam">✨</button>
+    <button class="glam-circle-btn" id="glamBtn" title="Glam"><img src="cat.png" alt="Glam" /></button>
     <div class="header-btns">
       <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
       <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
