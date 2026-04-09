@@ -1276,22 +1276,28 @@
       </div>
     </div>
 
-    <div class="thoughts-compose">
-      <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
-        <div class="avatar-picker-wrap">
-          <button class="avatar-pick-btn" id="thought-avatar-btn" title="Pick avatar"></button>
-          <div class="avatar-dropdown" id="thought-avatar-dd"></div>
+    <button class="compose-tab" id="thought-compose-tab">
+      Drop a Ponder <i class="tab-arrow">&#9650;</i>
+    </button>
+
+    <div class="compose-drawer" id="thought-compose-drawer">
+      <div class="compose-area">
+        <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
+          <div class="avatar-picker-wrap">
+            <button class="avatar-pick-btn" id="thought-avatar-btn" title="Pick avatar"></button>
+            <div class="avatar-dropdown drops-down" id="thought-avatar-dd"></div>
+          </div>
+          <div class="field-wrap" style="flex:1;margin:0;">
+            <label class="compose-label" for="thought-name">Your name or alias</label>
+            <input class="compose-input" id="thought-name" type="text" placeholder="anonymous" maxlength="40" />
+          </div>
         </div>
-        <div class="field-wrap" style="flex:1;margin:0;">
-          <label class="compose-label" for="thought-name">Your name or alias</label>
-          <input class="compose-input" id="thought-name" type="text" placeholder="anonymous" maxlength="40" />
+        <label class="compose-label" for="thought-body">Drop a thought...</label>
+        <textarea class="compose-textarea" id="thought-body" placeholder="What just crossed your mind?"></textarea>
+        <div class="compose-footer">
+          <span class="counter" id="thought-counter">0 / 280</span>
+          <button class="post-btn thought-btn" id="thought-post-btn" disabled>Post</button>
         </div>
-      </div>
-      <label class="compose-label" for="thought-body">Drop a thought...</label>
-      <textarea class="compose-textarea" id="thought-body" placeholder="What just crossed your mind?"></textarea>
-      <div class="compose-footer">
-        <span class="counter" id="thought-counter">0 / 280</span>
-        <button class="post-btn thought-btn" id="thought-post-btn" disabled>Post</button>
       </div>
     </div>
   </section>
@@ -1432,10 +1438,17 @@
   // ── COMPOSE DRAWER ────────────────────────────────────────────
   const composeTab    = $('compose-tab');
   const composeDrawer = $('compose-drawer');
+  const thoughtTab    = $('thought-compose-tab');
+  const thoughtDrawer = $('thought-compose-drawer');
 
   composeTab.addEventListener('click', () => {
     const open = composeDrawer.classList.toggle('open');
     composeTab.classList.toggle('open', open);
+  });
+
+  thoughtTab.addEventListener('click', () => {
+    const open = thoughtDrawer.classList.toggle('open');
+    thoughtTab.classList.toggle('open', open);
   });
 
   // ── ESSAYS ────────────────────────────────────────────────────
@@ -1701,6 +1714,8 @@
       if (!r.ok) throw 0;
       $('thought-body').value = '';
       $('thought-body').dispatchEvent(new Event('input'));
+      thoughtDrawer.classList.remove('open');
+      thoughtTab.classList.remove('open');
       await fetchThoughts();
       $('thoughts-feed').scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
