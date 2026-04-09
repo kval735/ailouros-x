@@ -52,13 +52,7 @@
       --thoughts-bg: #fff5fa;
     }
 
-    /* ── PINK THEME: GLAM EFFECTS ── */
-
-    @keyframes pink-shimmer {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+    /* ── PINK THEME: POLKA DOT GLITTER ON HEADER ── */
 
     @keyframes pink-glitter {
       0%   { opacity: 0.12; }
@@ -66,19 +60,6 @@
       100% { opacity: 0.12; }
     }
 
-    @keyframes card-sweep {
-      0%   { transform: translateX(-150%); }
-      100% { transform: translateX(350%); }
-    }
-
-    /* 1. Shimmer gradient on header */
-    body:not([data-theme]) header {
-      background: linear-gradient(120deg, #F0C8E8, #FFD9A8, #ECC0F0, #FFB8D8, #F0D0E8) !important;
-      background-size: 400% 400% !important;
-      animation: pink-shimmer 6s ease infinite;
-    }
-
-    /* 2. Glitter dots on header */
     body:not([data-theme]) header::before {
       content: '';
       position: absolute;
@@ -93,42 +74,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
-    /* 3. Metallic gold on logo + panel titles */
-    body:not([data-theme]) .logo-img {
-      filter: sepia(0.45) hue-rotate(-20deg) saturate(2.5) brightness(1.15);
-    }
-
-    body:not([data-theme]) .panel-title {
-      background: linear-gradient(135deg, #B5860D, #FFD700, #C8960A, #FFE680, #B5860D);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: pink-shimmer 4s linear infinite;
-    }
-
-    /* 4. Shimmer sweep across cards */
-    body:not([data-theme]) .essay-card,
-    body:not([data-theme]) .thought-card { overflow: hidden; }
-
-    body:not([data-theme]) .essay-card::after,
-    body:not([data-theme]) .thought-card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 40%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
-      animation: card-sweep 4s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    body:not([data-theme]) .essay-card:nth-child(2n)::after  { animation-delay: 0.6s; }
-    body:not([data-theme]) .essay-card:nth-child(3n)::after  { animation-delay: 1.2s; }
-    body:not([data-theme]) .essay-card:nth-child(4n)::after  { animation-delay: 1.8s; }
-    body:not([data-theme]) .thought-card:nth-child(2n)::after { animation-delay: 0.4s; }
-    body:not([data-theme]) .thought-card:nth-child(3n)::after { animation-delay: 0.8s; }
 
     /* ── THEME: GLAM (placeholder — same as pink for now) ── */
     body[data-theme="glam"] {
