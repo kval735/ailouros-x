@@ -214,6 +214,29 @@ app.post('/api/thoughts', async (req, res) => {
   res.status(201).json(data);
 });
 
+// ── CANVAS / GRAFFITI WALL ─────────────────────────────────────
+app.get('/api/canvas', async (_req, res) => {
+  const { data, error } = await sb
+    .from('strokes')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post('/api/canvas/stroke', async (req, res) => {
+  const { points } = req.body;
+  if (!points || !Array.isArray(points) || points.length < 2)
+    return res.status(400).json({ error: 'invalid stroke' });
+  const { data, error } = await sb
+    .from('strokes')
+    .insert({ points })
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
 app.listen(PORT, () => {
   console.log(`Ailouros X running on http://localhost:${PORT}`);
 });

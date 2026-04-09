@@ -784,6 +784,87 @@
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
+    /* ── GRAFFITI WALL BUTTON ── */
+    .wall-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-family: var(--broadway);
+      font-size: 0.75rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.15s, opacity 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .wall-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    /* ── GRAFFITI WALL MODAL ── */
+    .wall-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .wall-overlay.open { display: flex; }
+
+    .wall-modal {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+      width: 90vw;
+      max-width: 960px;
+    }
+
+    .wall-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wall-title {
+      font-family: var(--broadway);
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .wall-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+    }
+    .wall-close:hover { color: var(--text); }
+
+    #wallCanvas {
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      cursor: crosshair;
+      display: block;
+      width: 100%;
+      touch-action: none;
+    }
+
+    .wall-footer {
+      font-family: var(--broadway);
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
     /* ── AVATAR EMOJI PICKER ── */
     .avatar-picker-wrap {
       position: relative;
@@ -916,7 +997,20 @@
 </head>
 <body>
 
+<!-- Graffiti Wall Modal -->
+<div class="wall-overlay" id="wallOverlay">
+  <div class="wall-modal">
+    <div class="wall-header">
+      <span class="wall-title">🖊️ The Wall</span>
+      <button class="wall-close" id="wallClose">&times;</button>
+    </div>
+    <canvas id="wallCanvas" height="500"></canvas>
+    <div class="wall-footer">Draw anything — it stays forever ✦ refresh to see others</div>
+  </div>
+</div>
+
 <header>
+  <button class="wall-btn" id="wallBtn">✏️ The Wall</button>
   <div class="header-center">
     <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
@@ -1458,6 +1552,109 @@
   fetchEssays();
   fetchThoughts();
   connectSSE();
+
+  // ── GRAFFITI WALL ─────────────────────────────────────────────
+  const wallOverlay = $('wallOverlay');
+  const wallCanvas  = $('wallCanvas');
+  const ctx         = wallCanvas.getContext('2d');
+  const CANVAS_W    = 1200;
+  const CANVAS_H    = 500;
+  wallCanvas.width  = CANVAS_W;
+  wallCanvas.height = CANVAS_H;
+
+  function replayStrokes(strokes) {
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillStyle = '#fdf8ff';
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    strokes.forEach(s => {
+      const pts = s.points;
+      if (!pts || pts.length < 2) return;
+      ctx.beginPath();
+      ctx.strokeStyle = '#2d1a4a';
+      ctx.lineWidth   = 3;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+    });
+  }
+
+  async function loadWall() {
+    try {
+      const r = await fetch('/api/canvas');
+      const strokes = await r.json();
+      replayStrokes(strokes);
+    } catch { }
+  }
+
+  let drawing = false;
+  let currentStroke = [];
+
+  function canvasPos(e) {
+    const rect  = wallCanvas.getBoundingClientRect();
+    const scaleX = CANVAS_W / rect.width;
+    const scaleY = CANVAS_H / rect.height;
+    const src   = e.touches ? e.touches[0] : e;
+    return {
+      x: Math.round((src.clientX - rect.left) * scaleX),
+      y: Math.round((src.clientY - rect.top)  * scaleY)
+    };
+  }
+
+  function startDraw(e) {
+    drawing = true;
+    currentStroke = [canvasPos(e)];
+    ctx.beginPath();
+    ctx.strokeStyle = '#2d1a4a';
+    ctx.lineWidth   = 3;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    const p = currentStroke[0];
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function moveDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = canvasPos(e);
+    currentStroke.push(p);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+
+  async function endDraw() {
+    if (!drawing) return;
+    drawing = false;
+    if (currentStroke.length < 2) return;
+    try {
+      await fetch('/api/canvas/stroke', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ points: currentStroke })
+      });
+    } catch { }
+    currentStroke = [];
+  }
+
+  wallCanvas.addEventListener('mousedown',  startDraw);
+  wallCanvas.addEventListener('mousemove',  moveDraw);
+  wallCanvas.addEventListener('mouseup',    endDraw);
+  wallCanvas.addEventListener('mouseleave', endDraw);
+  wallCanvas.addEventListener('touchstart', startDraw, { passive: false });
+  wallCanvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+  wallCanvas.addEventListener('touchend',   endDraw);
+
+  $('wallBtn').addEventListener('click', () => {
+    wallOverlay.classList.add('open');
+    loadWall();
+  });
+
+  $('wallClose').addEventListener('click', () => wallOverlay.classList.remove('open'));
+
+  wallOverlay.addEventListener('click', e => {
+    if (e.target === wallOverlay) wallOverlay.classList.remove('open');
+  });
 </script>
 </body>
 </html>
