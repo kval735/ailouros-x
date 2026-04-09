@@ -445,9 +445,15 @@
       background: var(--cb);
       border-radius: var(--radius);
       border: 2px solid var(--c);
-      padding: 14px 15px;
+      padding: 14px 15px 12px;
       box-shadow: 0 2px 10px rgba(200,140,180,0.10);
       transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .thought-actions {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
     }
 
     .thought-card:hover {
@@ -1008,17 +1014,36 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      border: 2px solid var(--border);
+      border: 2px dashed var(--pink);
       background: var(--surface);
       font-size: 1.25rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.2s;
+      line-height: 1;
+      transition: border-color 0.2s, transform 0.15s;
+      position: relative;
     }
 
-    .avatar-pick-btn:hover { border-color: var(--pink); }
+    .avatar-pick-btn::after {
+      content: '✎';
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      font-size: 0.55rem;
+      background: var(--pink);
+      color: #fff;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .avatar-pick-btn:hover { border-color: var(--rose); transform: scale(1.08); }
 
     .avatar-dropdown {
       display: none;
@@ -1027,16 +1052,22 @@
       left: 0;
       background: var(--surface);
       border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 8px;
-      gap: 6px;
+      border-radius: 12px;
+      padding: 6px;
+      gap: 4px;
       flex-wrap: wrap;
-      width: 180px;
+      width: 148px;
       z-index: 300;
       box-shadow: 0 4px 20px rgba(0,0,0,0.14);
     }
 
     .avatar-dropdown.open { display: flex; }
+
+    /* opens downward (for compose drawer where upward is clipped) */
+    .avatar-dropdown.drops-down {
+      bottom: auto;
+      top: calc(100% + 8px);
+    }
 
     .emoji-opt {
       background: none;
@@ -1056,6 +1087,7 @@
       font-size: 1.15rem;
       border: 2px solid var(--border);
       color: inherit;
+      line-height: 1;
     }
 
     /* ── Buttons ── */
@@ -1195,7 +1227,7 @@
         <div class="compose-row">
           <div class="avatar-picker-wrap">
             <button class="avatar-pick-btn" id="essay-avatar-btn" title="Pick avatar"></button>
-            <div class="avatar-dropdown" id="essay-avatar-dd"></div>
+            <div class="avatar-dropdown drops-down" id="essay-avatar-dd"></div>
           </div>
           <div class="field-wrap">
             <label class="compose-label" for="essay-name">Your name or alias</label>
