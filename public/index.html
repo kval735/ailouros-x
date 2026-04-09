@@ -1394,6 +1394,8 @@
       document.body.dataset.theme = name;
     }
     localStorage.setItem('theme', name);
+    const logoImg = document.getElementById('logoImg');
+    if (logoImg) logoImg.src = name === 'pink' ? 'rlogo.png' : 'fontbolt.png';
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
