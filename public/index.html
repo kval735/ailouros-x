@@ -848,6 +848,22 @@
     .counter.warn { color: #d4940a; }
     .counter.over { color: #d94040; }
 
+    /* ── BANANA RAIN ── */
+    @keyframes banana-fall {
+      0%   { transform: translateY(-60px) rotate(0deg);   opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+    }
+
+    .banana-drop {
+      position: fixed;
+      top: 0;
+      font-size: 2rem;
+      pointer-events: none;
+      z-index: 9999;
+      animation: banana-fall linear forwards;
+    }
+
     /* ── HEADER RIGHT GROUP ── */
     .header-right-group {
       position: absolute;
@@ -1185,6 +1201,7 @@
 
 <header>
   <div class="header-right-group">
+    <button class="glam-circle-btn" id="bananaBtn" title="🍌">🍌</button>
     <button class="glam-circle-btn" id="glamBtn" title="Glam">✨</button>
     <div class="header-btns">
       <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
@@ -1736,6 +1753,24 @@
   fetchEssays();
   fetchThoughts();
   connectSSE();
+
+  // ── BANANA RAIN ───────────────────────────────────────────────
+  document.getElementById('bananaBtn').addEventListener('click', () => {
+    const total    = 40;
+    const duration = 5000;
+    for (let i = 0; i < total; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'banana-drop';
+        el.textContent = '🍌';
+        el.style.left     = Math.random() * 100 + 'vw';
+        el.style.fontSize = (1.2 + Math.random() * 1.6) + 'rem';
+        el.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+        document.body.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+      }, Math.random() * duration);
+    }
+  });
 
   // ── GRAFFITI WALL ─────────────────────────────────────────────
   const wallOverlay = $('wallOverlay');
