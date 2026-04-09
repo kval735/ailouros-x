@@ -10,29 +10,29 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── THEME: PINK (default) ── */
+    /* ── THEME: GLAM PINK (default) ── */
     :root {
-      --bg:        #fce8f0;
-      --bg2:       #f9dde9;
-      --surface:   #fff5f9;
-      --surface2:  #ffeef5;
-      --border:    #f0c8dd;
+      --bg:        #FDE4F2;
+      --bg2:       #FAD0E8;
+      --surface:   #FFF5FC;
+      --surface2:  #FFEAF8;
+      --border:    #F0A0D0;
 
-      --text:      #411E57;
-      --text2:     #872D72;
-      --muted:     #b8849e;
+      --text:      #4A0E3C;
+      --text2:     #9C1060;
+      --muted:     #C06090;
 
-      --pink:      #DE5C8F;
-      --pink-soft: #EDABBE;
-      --rose:      #DE5C8F;
-      --lavender:  #c9aee8;
-      --lilac:     #dfc5f5;
-      --purple:    #7C4EBB;
-      --yellow:    #f9e07a;
-      --peach:     #f9c497;
-      --mint:      #a8e6c8;
-      --sky:       #b0d9f5;
-      --coral:     #f5a09a;
+      --pink:      #E8186A;
+      --pink-soft: #F080B0;
+      --rose:      #E8186A;
+      --lavender:  #C8A0F0;
+      --lilac:     #EAD0FF;
+      --purple:    #8040C8;
+      --yellow:    #FFE060;
+      --peach:     #FFB880;
+      --mint:      #90E8C0;
+      --sky:       #90D0F8;
+      --coral:     #FF8890;
 
       --radius: 18px;
       --ui:       'Aptos', 'Segoe UI', sans-serif;
@@ -40,16 +40,49 @@
       --logo:     'Abril Fatface', fantasy;
       --broadway: 'Abril Fatface', fantasy;
 
-      --btn-grad: #7C4EBB;
-      --btn-shadow: rgba(124,78,187,0.20);
-      --tbtn-grad: #f9d050;
+      --btn-grad:   #E8186A;
+      --btn-shadow: rgba(232,24,106,0.25);
+      --tbtn-grad:  #FFE060;
       --tbtn-color: #5a3e00;
-      --tbtn-shadow: rgba(249,208,80,0.20);
-      --header-bg: #E8D5F8;
-      --header-text: #411E57;
-      --panel-bg: #fff5fa;
-      --compose-bg: #fff0f7;
-      --thoughts-bg: #fff5fa;
+      --tbtn-shadow: rgba(255,224,96,0.25);
+      --header-bg:  #FFD0E8;
+      --header-text: #4A0E3C;
+      --panel-bg:   #FFF5FC;
+      --compose-bg: #FFF0FA;
+      --thoughts-bg:#FFF5FC;
+    }
+
+    /* ── GLAM SHIMMER + SPARKLE on pink/default header ── */
+    @keyframes glam-shimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes glam-sparkle {
+      0%   { opacity: 0.2; }
+      100% { opacity: 0.65; }
+    }
+
+    body:not([data-theme]) header {
+      background: linear-gradient(120deg, #FFD0E8, #FFC0D8, #FFE8A8, #FFC8E0, #FFD0E8) !important;
+      background-size: 400% 400% !important;
+      animation: glam-shimmer 5s ease infinite;
+    }
+
+    body:not([data-theme]) header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,215,0,0.9) 1.5px, transparent 1.5px),
+        radial-gradient(circle, rgba(255,255,255,0.95) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,140,190,0.7) 1px, transparent 1px);
+      background-size: 44px 44px, 27px 27px, 36px 36px;
+      background-position: 8px 8px, 13px 20px, 22px 4px;
+      animation: glam-sparkle 2.5s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* ── THEME: GOLD ── */
@@ -788,11 +821,11 @@
     .header-btns {
       position: absolute;
       right: 12px;
-      top: 8px;
-      bottom: 8px;
+      top: 18px;
+      bottom: 18px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       z-index: 10;
     }
 
@@ -801,10 +834,10 @@
       background: var(--purple);
       color: #fff;
       border: none;
-      border-radius: 12px;
-      padding: 0 16px;
+      border-radius: 10px;
+      padding: 0 12px;
       font-family: var(--broadway);
-      font-size: 0.72rem;
+      font-size: 0.64rem;
       cursor: pointer;
       letter-spacing: 0.04em;
       white-space: nowrap;
@@ -812,6 +845,14 @@
     }
     .header-action-btn:hover { transform: scale(1.04); opacity: 0.92; }
     .header-action-btn.info-btn { background: var(--pink); }
+    .header-action-btn.glam-btn {
+      background: linear-gradient(135deg, #E8186A, #D4A017, #E8186A);
+      background-size: 200% 200%;
+      animation: glam-shimmer 3s ease infinite;
+    }
+    .header-action-btn.glam-btn.active {
+      box-shadow: 0 0 0 2px white, 0 0 10px rgba(255,215,0,0.7);
+    }
 
     /* ── SHARED MODAL STYLES ── */
     .modal-overlay {
@@ -1043,15 +1084,12 @@
 
 <!-- Graffiti Wall Modal -->
 <div class="modal-overlay" id="wallOverlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-title">✏️ The Wall</span>
-      <button class="modal-close" id="wallClose">&times;</button>
-    </div>
+  <div class="modal-box" style="position:relative;">
+    <button class="modal-close" id="wallClose" style="position:absolute;top:10px;right:14px;z-index:2;">&times;</button>
     <div class="whiteboard-frame">
-      <canvas id="wallCanvas" height="560"></canvas>
+      <canvas id="wallCanvas" height="625"></canvas>
     </div>
-    <div class="wall-footer">Draw anything — it stays forever ✦ reload to see others' drawings</div>
+    <div class="wall-footer">Leave your mark.</div>
   </div>
 </div>
 
@@ -1070,6 +1108,7 @@
 
 <header>
   <div class="header-btns">
+    <button class="header-action-btn glam-btn" id="glamBtn">✨ Glam</button>
     <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
     <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
   </div>
@@ -1256,6 +1295,8 @@
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
+    const glamBtn = document.getElementById('glamBtn');
+    if (glamBtn) glamBtn.classList.toggle('active', name === 'pink');
     if (typeof renderEssays === 'function' && typeof essays !== 'undefined' && essays.length) renderEssays();
     if (typeof renderThoughts === 'function' && typeof thoughts !== 'undefined' && thoughts.length) renderThoughts();
   }
@@ -1263,6 +1304,8 @@
   document.querySelectorAll('.theme-btn').forEach(b =>
     b.addEventListener('click', () => applyTheme(b.dataset.theme))
   );
+
+  document.getElementById('glamBtn').addEventListener('click', () => applyTheme('pink'));
 
   applyTheme(localStorage.getItem('theme') || 'pink');
 
@@ -1625,7 +1668,7 @@
   const wallCanvas  = $('wallCanvas');
   const ctx         = wallCanvas.getContext('2d');
   const CANVAS_W    = 1200;
-  const CANVAS_H    = 500;
+  const CANVAS_H    = 625;
   wallCanvas.width  = CANVAS_W;
   wallCanvas.height = CANVAS_H;
 
