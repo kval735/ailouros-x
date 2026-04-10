@@ -1287,6 +1287,7 @@
       <img src="flowers.jpg" alt="Flowers" />
       <button class="maisy-x" id="maisyFlowersX">&times;</button>
     </div>
+    <button class="maisy-x" id="maisyCloseAll" style="display:none;position:absolute;top:-14px;right:-14px;">&times;</button>
   </div>
 </div>
 
@@ -2006,15 +2007,27 @@
     });
   });
 
+  const maisyCloseAll = $('maisyCloseAll');
+
   $('maisyFlowersX').addEventListener('click', e => {
     e.stopPropagation();
     maisyFront.style.display = 'none';
+    maisyCloseAll.style.display = 'flex';
+  });
+
+  maisyCloseAll.addEventListener('click', e => {
+    e.stopPropagation();
+    maisyOverlay.classList.remove('open');
+    maisyFront.style.display = 'flex';
+    maisyCloseAll.style.display = 'none';
+    maisyTriggered = false;
   });
 
   maisyOverlay.addEventListener('click', e => {
     if (e.target === maisyOverlay) {
       maisyOverlay.classList.remove('open');
       maisyFront.style.display = 'flex';
+      maisyCloseAll.style.display = 'none';
       maisyTriggered = false;
     }
   });
