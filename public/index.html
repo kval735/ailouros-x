@@ -871,6 +871,68 @@
       animation: emoji-fall linear forwards;
     }
 
+    /* ── MAISY EASTER EGG ── */
+    #maisyOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    #maisyOverlay.open { display: flex; }
+    .maisy-inner {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      align-items: center;
+    }
+    .maisy-back {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      align-items: center;
+    }
+    .maisy-back img {
+      height: 380px;
+      width: auto;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    .maisy-front {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .maisy-front img {
+      height: 380px;
+      width: auto;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    .maisy-x {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .maisy-x:hover { background: rgba(0,0,0,0.9); }
+
     /* ── HEADER RIGHT GROUP ── */
     .header-right-group {
       position: absolute;
@@ -1208,6 +1270,20 @@
     </div>
     <div class="info-content">
       <p>More info coming soon...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Maisy Easter Egg -->
+<div id="maisyOverlay">
+  <div class="maisy-inner">
+    <div class="maisy-back">
+      <img src="coco.jfif" alt="Coco" />
+      <img src="grainwaves.jfif" alt="Grainwaves" />
+    </div>
+    <div class="maisy-front" id="maisyFront">
+      <img src="flowers.jpg" alt="Flowers" />
+      <button class="maisy-x" id="maisyFlowersX">&times;</button>
     </div>
   </div>
 </div>
@@ -1910,6 +1986,36 @@
   $('wallClose').addEventListener('click', () => wallOverlay.classList.remove('open'));
 
   wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
+
+  // ── MAISY EASTER EGG ──────────────────────────────────────────
+  const maisyOverlay = $('maisyOverlay');
+  const maisyFront   = $('maisyFront');
+  let maisyTriggered = false;
+
+  ['essay-name', 'thought-name'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      if (/maisy/i.test(el.value) && !maisyTriggered) {
+        maisyTriggered = true;
+        maisyFront.style.display = 'flex';
+        maisyOverlay.classList.add('open');
+      }
+    });
+  });
+
+  $('maisyFlowersX').addEventListener('click', e => {
+    e.stopPropagation();
+    maisyFront.style.display = 'none';
+  });
+
+  maisyOverlay.addEventListener('click', e => {
+    if (e.target === maisyOverlay) {
+      maisyOverlay.classList.remove('open');
+      maisyFront.style.display = 'flex';
+      maisyTriggered = false;
+    }
+  });
 </script>
 </body>
 </html>
