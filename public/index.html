@@ -1085,7 +1085,7 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 10px;
+      gap: 5mm;
       z-index: 10;
     }
 
@@ -2069,6 +2069,11 @@
   fetchEssays();
   fetchThoughts();
   connectSSE();
+
+  // preload all header logos so theme switches are instant
+  ['bratzheader.png', 'Bananaheader.png', 'purpleheader.png', 'fontbolt.png'].forEach(src => {
+    new Image().src = src;
+  });
 
   // ── GRAFFITI WALL ─────────────────────────────────────────────
   const wallOverlay = $('wallOverlay');
