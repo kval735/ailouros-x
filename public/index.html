@@ -1086,6 +1086,7 @@
       width: auto;
       display: block;
     }
+    #chatBtn img { height: 48px; }
     .glam-circle-btn:hover { opacity: 0.85; }
     .glam-circle-btn.active {
       filter:
@@ -1451,7 +1452,7 @@
     <button class="glam-circle-btn" id="glamBtn" title="Glam"><img src="cat.png" alt="Glam" /></button>
     <button class="glam-circle-btn" id="chatBtn" title="The Chat"><img src="chat.png" alt="Chat" /></button>
     <div class="header-btns">
-      <button class="header-action-btn" id="wallBtn">The Wall</button>
+      <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
       <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
     </div>
   </div>
@@ -1696,6 +1697,7 @@
     const t = document.body.dataset.theme;
     if (t === 'gold')   return '\u{1F34C}';  // banana
     if (t === 'purple') return '\u{1F49C}';  // purple heart
+    if (t === 'glam')   return '\u{2B50}';   // star
     return '\u{1F4BF}';                        // CD (pink theme)
   }
 
@@ -2236,6 +2238,10 @@
       if (/maisy/i.test(el.value) && !maisyTriggered) {
         maisyTriggered = true;
         maisyOverlay.classList.add('open');
+      }
+      if (/^olli$/i.test(el.value.trim())) {
+        localStorage.setItem('avatarEmoji', '💁‍♀️');
+        syncAllPickers('💁‍♀️');
       }
     });
   });
