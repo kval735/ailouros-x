@@ -889,12 +889,14 @@
       gap: 12px;
       align-items: center;
     }
-    .maisy-back {
-      display: flex;
+    .maisy-stage {
+      display: none;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+      position: relative;
     }
+    .maisy-stage.active { display: flex; }
     .maisy-back-images {
       display: flex;
       flex-direction: row;
@@ -907,32 +909,29 @@
       border-radius: 10px;
       object-fit: cover;
     }
-    .maisy-grant {
-      background: rgba(255,255,255,0.95);
-      color: var(--purple, #7C4EBB);
-      border-radius: 12px;
-      padding: 10px 24px;
-      font-family: var(--broadway);
-      font-size: 1rem;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-      letter-spacing: 0.03em;
-    }
-    .maisy-front {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.75);
-      border-radius: 10px;
-    }
     .maisy-front img {
       height: 380px;
       width: auto;
       border-radius: 10px;
       object-fit: cover;
     }
+    .maisy-grant-box {
+      background: rgba(255,255,255,0.97);
+      color: var(--purple, #7C4EBB);
+      border-radius: 16px;
+      padding: 32px 48px;
+      font-family: var(--broadway);
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      letter-spacing: 0.03em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .maisy-grant-line1 { font-size: 1.2rem; }
+    .maisy-grant-line2 { font-size: 1rem; opacity: 0.8; }
+    .maisy-grant-panda { font-size: 4rem; line-height: 1; margin-top: 8px; }
     .maisy-x {
       position: absolute;
       top: -14px;
@@ -951,6 +950,29 @@
       line-height: 1;
     }
     .maisy-x:hover { background: rgba(0,0,0,0.9); }
+
+    /* ── OLLI SPECIAL CARD ── */
+    .olli-card {
+      border: 3px solid gold !important;
+      box-shadow: 0 0 0 4px rgba(255,215,0,0.25), 0 4px 20px rgba(255,180,0,0.35) !important;
+      background: linear-gradient(135deg, #fffbe6 0%, #fff8cc 100%) !important;
+      position: relative;
+    }
+    .olli-card::before {
+      content: '⭐ OLLI ⭐';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: gold;
+      color: #7a5800;
+      font-family: var(--broadway);
+      font-size: 0.6rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.08em;
+    }
 
     /* ── CHAT ROOM ── */
     .chat-box {
@@ -1381,18 +1403,28 @@
 <!-- Maisy Easter Egg -->
 <div id="maisyOverlay">
   <div class="maisy-inner">
-    <div class="maisy-back">
+    <!-- Stage 1: flowers -->
+    <div class="maisy-stage maisy-front active" id="maisyStage1">
+      <img src="flowers.jpg" alt="Flowers" />
+      <button class="maisy-x" id="maisyFlowersX">&times;</button>
+    </div>
+    <!-- Stage 2: coco + grainwaves -->
+    <div class="maisy-stage" id="maisyStage2">
       <div class="maisy-back-images">
         <img src="coco.jfif" alt="Coco" />
         <img src="grainwaves.jfif" alt="Grainwaves" />
       </div>
-      <div class="maisy-grant" id="maisyGrant">🐼 Avatar access granted: one of the guys</div>
+      <button class="maisy-x" id="maisyBackX">&times;</button>
     </div>
-    <div class="maisy-front" id="maisyFront">
-      <img src="flowers.jpg" alt="Flowers" />
-      <button class="maisy-x" id="maisyFlowersX">&times;</button>
+    <!-- Stage 3: avatar grant -->
+    <div class="maisy-stage" id="maisyStage3">
+      <div class="maisy-grant-box">
+        <div class="maisy-grant-line1">Avatar Access Granted:</div>
+        <div class="maisy-grant-line2">One of the guys...</div>
+        <div class="maisy-grant-panda">🐼</div>
+      </div>
+      <button class="maisy-x" id="maisyGrantX">&times;</button>
     </div>
-    <button class="maisy-x" id="maisyCloseAll" style="display:none;position:absolute;top:-14px;right:-14px;">&times;</button>
   </div>
 </div>
 
@@ -1417,9 +1449,9 @@
 <header>
   <div class="header-right-group">
     <button class="glam-circle-btn" id="glamBtn" title="Glam"><img src="cat.png" alt="Glam" /></button>
-    <button class="header-action-btn chat-btn" id="chatBtn">💬 The Chat</button>
+    <button class="glam-circle-btn" id="chatBtn" title="The Chat"><img src="chat.png" alt="Chat" /></button>
     <div class="header-btns">
-      <button class="header-action-btn" id="wallBtn">✏️ The Wall</button>
+      <button class="header-action-btn" id="wallBtn">The Wall</button>
       <button class="header-action-btn info-btn" id="infoBtn">DA FAQ?</button>
     </div>
   </div>
@@ -1610,7 +1642,7 @@
     }
     localStorage.setItem('theme', name);
     const logoImg = document.getElementById('logoImg');
-    if (logoImg) logoImg.src = name === 'pink' ? 'rlogo.png' : 'fontbolt.png';
+    if (logoImg) logoImg.src = name === 'pink' ? 'bratzheader.png' : 'fontbolt.png';
     document.querySelectorAll('.theme-btn').forEach(b =>
       b.classList.toggle('active', b.dataset.theme === name)
     );
@@ -1707,7 +1739,7 @@
 
     essays.forEach(e => {
       const card = document.createElement('div');
-      card.className = 'essay-card';
+      card.className = 'essay-card' + (/^olli$/i.test(e.name || '') ? ' olli-card' : '');
       const wc    = wordCount(e.body);
       const long  = wc > 100;
       const liked = isLiked('liked_essays', e.id);
@@ -1901,7 +1933,7 @@
 
     thoughts.forEach(t => {
       const card  = document.createElement('div');
-      card.className = 'thought-card';
+      card.className = 'thought-card' + (/^olli$/i.test(t.name || '') ? ' olli-card' : '');
       const liked = isLiked('liked_thoughts', t.id);
 
       card.innerHTML = `
@@ -2184,8 +2216,18 @@
 
   // ── MAISY EASTER EGG ──────────────────────────────────────────
   const maisyOverlay = $('maisyOverlay');
-  const maisyFront   = $('maisyFront');
+  const maisyStage1  = $('maisyStage1');
+  const maisyStage2  = $('maisyStage2');
+  const maisyStage3  = $('maisyStage3');
   let maisyTriggered = false;
+
+  function maisyReset() {
+    maisyOverlay.classList.remove('open');
+    maisyStage1.classList.add('active');
+    maisyStage2.classList.remove('active');
+    maisyStage3.classList.remove('active');
+    maisyTriggered = false;
+  }
 
   ['essay-name', 'thought-name'].forEach(id => {
     const el = document.getElementById(id);
@@ -2193,36 +2235,32 @@
     el.addEventListener('input', () => {
       if (/maisy/i.test(el.value) && !maisyTriggered) {
         maisyTriggered = true;
-        localStorage.setItem('avatar', '🐼');
-        maisyFront.style.display = 'flex';
         maisyOverlay.classList.add('open');
       }
     });
   });
 
-  const maisyCloseAll = $('maisyCloseAll');
-
   $('maisyFlowersX').addEventListener('click', e => {
     e.stopPropagation();
-    maisyFront.style.display = 'none';
-    maisyCloseAll.style.display = 'flex';
+    maisyStage1.classList.remove('active');
+    maisyStage2.classList.add('active');
   });
 
-  maisyCloseAll.addEventListener('click', e => {
+  $('maisyBackX').addEventListener('click', e => {
     e.stopPropagation();
-    maisyOverlay.classList.remove('open');
-    maisyFront.style.display = 'flex';
-    maisyCloseAll.style.display = 'none';
-    maisyTriggered = false;
+    maisyStage2.classList.remove('active');
+    maisyStage3.classList.add('active');
+  });
+
+  $('maisyGrantX').addEventListener('click', e => {
+    e.stopPropagation();
+    localStorage.setItem('avatarEmoji', '🐼');
+    syncAllPickers('🐼');
+    maisyReset();
   });
 
   maisyOverlay.addEventListener('click', e => {
-    if (e.target === maisyOverlay) {
-      maisyOverlay.classList.remove('open');
-      maisyFront.style.display = 'flex';
-      maisyCloseAll.style.display = 'none';
-      maisyTriggered = false;
-    }
+    if (e.target === maisyOverlay) maisyReset();
   });
 </script>
 </body>
