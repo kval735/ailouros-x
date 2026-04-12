@@ -970,6 +970,7 @@
     .maisy-x:hover { background: rgba(0,0,0,0.9); }
 
     /* ── OLLI SPECIAL CARD ── */
+    /* Olli card — glam default (gold) */
     .olli-card {
       border: 3px solid gold !important;
       box-shadow: 0 0 0 4px rgba(255,215,0,0.25), 0 4px 20px rgba(255,180,0,0.35) !important;
@@ -990,6 +991,38 @@
       border-radius: 20px;
       white-space: nowrap;
       letter-spacing: 0.08em;
+    }
+    /* Olli card — pink/ruby theme */
+    body:not([data-theme]) .olli-card,
+    body[data-theme="pink"] .olli-card {
+      border: 3px solid #DE5C8F !important;
+      box-shadow: 0 0 0 4px rgba(222,92,143,0.2), 0 4px 20px rgba(222,92,143,0.3) !important;
+      background: linear-gradient(135deg, #fce8f2 0%, #fad4e8 100%) !important;
+    }
+    body:not([data-theme]) .olli-card::before,
+    body[data-theme="pink"] .olli-card::before {
+      background: #DE5C8F;
+      color: #fff;
+    }
+    /* Olli card — gold theme */
+    body[data-theme="gold"] .olli-card {
+      border: 3px solid #D4980A !important;
+      box-shadow: 0 0 0 4px rgba(212,152,10,0.25), 0 4px 20px rgba(212,152,10,0.35) !important;
+      background: linear-gradient(135deg, #fff8e1 0%, #ffedb0 100%) !important;
+    }
+    body[data-theme="gold"] .olli-card::before {
+      background: #D4980A;
+      color: #fff;
+    }
+    /* Olli card — purple theme */
+    body[data-theme="purple"] .olli-card {
+      border: 3px solid #7020D0 !important;
+      box-shadow: 0 0 0 4px rgba(112,32,208,0.2), 0 4px 20px rgba(112,32,208,0.3) !important;
+      background: linear-gradient(135deg, #ede0ff 0%, #dcc8ff 100%) !important;
+    }
+    body[data-theme="purple"] .olli-card::before {
+      background: #7020D0;
+      color: #fff;
     }
 
     /* ── CHAT ROOM ── */
@@ -1615,7 +1648,7 @@
     ddEl.innerHTML = EMOJIS.map(e =>
       `<button class="emoji-opt" data-emoji="${e}">${e}</button>`
     ).join('');
-    const saved = localStorage.getItem('avatarEmoji') || EMOJIS[0];
+    const saved = EMOJIS[0];
     btnEl.textContent = saved;
     ddEl.querySelectorAll('.emoji-opt').forEach(opt => {
       opt.addEventListener('click', () => {
