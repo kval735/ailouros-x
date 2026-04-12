@@ -1264,10 +1264,54 @@
     /* ── INFO MODAL ── */
     .info-content {
       font-family: var(--ui);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       color: var(--text);
-      line-height: 1.7;
-      padding: 10px 4px;
+      line-height: 1.75;
+      padding: 4px 4px 10px;
+      overflow-y: auto;
+      max-height: 68vh;
+    }
+    .faq-quote {
+      border-left: 4px solid var(--pink);
+      padding: 10px 16px;
+      margin: 14px 0;
+      font-style: italic;
+      color: var(--text2);
+      background: var(--surface2);
+      border-radius: 0 10px 10px 0;
+      font-size: 0.95rem;
+    }
+    .faq-section-title {
+      font-family: var(--broadway);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: var(--purple);
+      margin: 18px 0 6px;
+      text-transform: uppercase;
+    }
+    .faq-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .faq-feature {
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border-left: 4px solid var(--pink-soft);
+    }
+    .faq-feature-title {
+      font-family: var(--broadway);
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .faq-feature p { margin: 0; font-size: 0.83rem; color: var(--text2); }
+    @media (max-width: 768px) {
+      .faq-features { grid-template-columns: 1fr; }
+      .info-content  { max-height: 60vh; }
     }
 
     /* ── AVATAR EMOJI PICKER ── */
@@ -1561,7 +1605,33 @@
       <button class="modal-close" id="infoClose">&times;</button>
     </div>
     <div class="info-content">
-      <p>More info coming soon...</p>
+
+      <p>Ailouros is the ancient Greek word for cat. X carries two meanings here, it can mean gone or dead, and it is also the Roman numeral for 10. A cat has 9 lives, so the 10th would be its last. Put it together: the dead cat. It all ties back to one idea: curiosity killed the cat. This site exists for the purpose of sharing your curious thoughts.</p>
+
+      <p>As people moved away, these curious conversations got harder to have. Ailouros X is the attempt to keep them going — a little corner of the internet that holds that same energy, wherever everyone ends up.</p>
+
+      <p><em>Inspired by Isla, Ruby, and Olli.</em></p>
+
+      <p class="faq-section-title">How to use it</p>
+      <div class="faq-features">
+        <div class="faq-feature">
+          <div class="faq-feature-title">🌀 Ponder</div>
+          <p>Short, sharp curiosity. Shower thoughts, weird questions, things that randomly crossed your mind. No pressure to have an answer — the point is the thought itself. Keep it brief, keep it curious.</p>
+        </div>
+        <div class="faq-feature">
+          <div class="faq-feature-title">📖 Deep Dive</div>
+          <p>A bit more developed. Write a short essay on a concept you've been thinking about, something you recently learned, a topic you went down a rabbit hole on. Think of it as a summary of your brain lately.</p>
+        </div>
+        <div class="faq-feature">
+          <div class="faq-feature-title">🖊️ The Wall</div>
+          <p>Leave your mark. Draw something, scribble something, write your name. It's a shared canvas. The wall remembers everyone who's been here.</p>
+        </div>
+        <div class="faq-feature">
+          <div class="faq-feature-title">💬 The Chat</div>
+          <p>Less curiosity, more chaos. Message whatever the fuck you want.</p>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
