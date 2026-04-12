@@ -224,6 +224,14 @@ app.get('/api/canvas', async (_req, res) => {
   res.json(data);
 });
 
+app.delete('/api/canvas/stroke/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+  const { error } = await sb.from('strokes').delete().eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 app.post('/api/canvas/stroke', async (req, res) => {
   const { points } = req.body;
   if (!points || !Array.isArray(points) || points.length < 2)

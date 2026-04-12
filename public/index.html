@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ailouros X</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐒</text></svg>">
+  <link rel="icon" href="cat.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
   <style>
@@ -1545,6 +1545,7 @@
 <div class="modal-overlay" id="wallOverlay">
   <div class="modal-box" style="position:relative;">
     <button class="modal-close" id="wallClose" style="position:absolute;top:10px;right:14px;z-index:2;">&times;</button>
+    <button id="wallUndo" title="Undo last stroke" style="position:absolute;top:10px;right:52px;z-index:2;background:rgba(255,255,255,0.85);border:1px solid #ccc;border-radius:8px;padding:4px 10px;font-size:0.75rem;cursor:pointer;font-family:var(--broadway);color:#555;display:none;">↩ Undo</button>
     <div class="whiteboard-frame">
       <canvas id="wallCanvas" height="625"></canvas>
     </div>
@@ -2263,6 +2264,12 @@
 
   let drawing = false;
   let currentStroke = [];
+  let myStrokeIds   = [];   // IDs drawn this session, for undo
+
+  const wallUndoBtn = $('wallUndo');
+  function syncUndoBtn() {
+    wallUndoBtn.style.display = myStrokeIds.length ? 'inline-block' : 'none';
+  }
 
   function canvasPos(e) {
     const rect  = wallCanvas.getBoundingClientRect();
@@ -2301,11 +2308,13 @@
     drawing = false;
     if (currentStroke.length < 2) return;
     try {
-      await fetch('/api/canvas/stroke', {
+      const r    = await fetch('/api/canvas/stroke', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ points: currentStroke })
       });
+      const data = await r.json();
+      if (data.id) { myStrokeIds.push(data.id); syncUndoBtn(); }
     } catch { }
     currentStroke = [];
   }
@@ -2317,6 +2326,16 @@
   wallCanvas.addEventListener('touchstart', startDraw, { passive: false });
   wallCanvas.addEventListener('touchmove',  moveDraw,  { passive: false });
   wallCanvas.addEventListener('touchend',   endDraw);
+
+  wallUndoBtn.addEventListener('click', async () => {
+    const id = myStrokeIds.pop();
+    if (!id) return;
+    try {
+      await fetch(`/api/canvas/stroke/${id}`, { method: 'DELETE' });
+      await loadWall();
+    } catch { myStrokeIds.push(id); }
+    syncUndoBtn();
+  });
 
   $('wallBtn').addEventListener('click', () => {
     wallOverlay.classList.add('open');
