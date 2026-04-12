@@ -237,6 +237,37 @@ app.post('/api/canvas/stroke', async (req, res) => {
   res.status(201).json(data);
 });
 
+// ── CHAT ───────────────────────────────────────────────────────
+app.get('/api/chat', async (_req, res) => {
+  const { data, error } = await sb
+    .from('chat_messages')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { name, body, avatar } = req.body;
+  if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
+  if (body.length > 300) return res.status(400).json({ error: 'too long' });
+
+  const { data, error } = await sb
+    .from('chat_messages')
+    .insert({
+      name:   (name || 'anonymous').slice(0, 40),
+      body:   body.slice(0, 300),
+      avatar: avatar || null
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  broadcast('chat', data);
+  res.status(201).json(data);
+});
+
 app.listen(PORT, () => {
   console.log(`Ailouros X running on http://localhost:${PORT}`);
 });
