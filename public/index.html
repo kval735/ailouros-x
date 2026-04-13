@@ -969,6 +969,88 @@
     }
     .maisy-x:hover { background: rgba(0,0,0,0.9); }
 
+    /* ── AD POPUP ── */
+    #adOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+    }
+    #adOverlay.open { display: flex; }
+    .ad-inner {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 50px rgba(0,0,0,0.5);
+      max-width: 90vw;
+      max-height: 85vh;
+    }
+    .ad-inner img { display: block; max-width: 90vw; max-height: 85vh; object-fit: contain; }
+    .ad-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .ad-close:hover { background: rgba(0,0,0,0.85); }
+
+    /* ── THOUGHT REPLIES ── */
+    .thought-replies-section { margin-top: 8px; }
+    .replies-toggle {
+      background: none;
+      border: none;
+      font-size: 0.72rem;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 0;
+      font-family: var(--ui);
+    }
+    .replies-toggle:hover { color: var(--text); }
+
+    /* ── CHAT IMAGE ── */
+    .chat-img-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+    .chat-img-btn:hover { background: var(--surface2); }
+    .chat-img-preview {
+      padding: 6px 12px;
+      background: var(--surface2);
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text2);
+    }
+    .chat-img-preview img { height: 40px; border-radius: 6px; }
+    .chat-img-preview button { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; }
+    .chat-msg-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 6px; display: block; cursor: pointer; }
+
     /* ── OLLI SPECIAL CARD ── */
     /* Olli card — glam default (gold) */
     .olli-card {
@@ -1664,6 +1746,14 @@
   </div>
 </div>
 
+<!-- Ad Popup -->
+<div id="adOverlay">
+  <div class="ad-inner">
+    <img src="ad.JPG" alt="ad" />
+    <button class="ad-close" id="adClose">&times;</button>
+  </div>
+</div>
+
 <!-- Chat Room Modal -->
 <div class="modal-overlay" id="chatOverlay">
   <div class="chat-box">
@@ -1674,9 +1764,16 @@
     <div class="chat-messages" id="chatMessages">
       <span class="chat-empty">No messages yet. Say something!</span>
     </div>
+    <div class="chat-img-preview" id="chatImgPreview" style="display:none;">
+      <img id="chatImgThumb" src="" alt="preview" />
+      <span id="chatImgName"></span>
+      <button id="chatImgClear">✕</button>
+    </div>
     <div class="chat-input-row">
       <input type="text" id="chatName" placeholder="your name..." maxlength="40" />
       <input type="text" id="chatBody" placeholder="say something..." maxlength="300" />
+      <button class="chat-img-btn" id="chatImgBtn" title="Upload image">📷</button>
+      <input type="file" id="chatImgInput" accept="image/*" style="display:none;" />
       <button id="chatSend">Send</button>
     </div>
   </div>
@@ -2193,6 +2290,21 @@
           <button class="like-btn${liked ? ' liked' : ''}" data-id="${t.id}" data-type="thought">
             ${likeEmoji()} ${liked ? 'Liked' : 'Like'}
           </button>
+          <button class="replies-toggle" id="tct-${t.id}">Replies (${t.reply_count || 0}) ▾</button>
+        </div>
+        <div class="thought-replies-section comments-section" id="trs-${t.id}" style="display:none;">
+          <div class="comments-list" id="trl-${t.id}"></div>
+          <div class="comment-compose">
+            <div style="display:flex;align-items:flex-end;gap:6px;">
+              <div class="avatar-picker-wrap">
+                <button class="avatar-pick-btn reply-avatar-btn" title="Pick avatar"></button>
+                <div class="avatar-dropdown reply-avatar-dd"></div>
+              </div>
+              <input type="text" placeholder="Your name..." id="trn-${t.id}" maxlength="40" style="flex:1;" />
+            </div>
+            <textarea placeholder="Reply..." id="trb-${t.id}" maxlength="500"></textarea>
+            <button class="comment-post-btn reply-post-btn" data-id="${t.id}">Post Reply</button>
+          </div>
         </div>
       `;
 
@@ -2200,6 +2312,24 @@
         const id = parseInt(ev.currentTarget.dataset.id);
         if (!isLiked('liked_thoughts', id)) likePost('thoughts', id, ev.currentTarget);
       });
+
+      card.querySelector('.replies-toggle').addEventListener('click', ev => {
+        const id  = parseInt(ev.currentTarget.id.replace('tct-', ''));
+        const sec = $(`trs-${id}`);
+        const open = sec.style.display !== 'none';
+        sec.style.display = open ? 'none' : 'block';
+        ev.currentTarget.textContent = `Replies (${t.reply_count || 0}) ${open ? '▾' : '▴'}`;
+        if (!open) fetchReplies(id);
+      });
+
+      card.querySelector('.reply-post-btn').addEventListener('click', ev => {
+        const id = parseInt(ev.currentTarget.dataset.id);
+        postReply(id, $(`trn-${id}`).value.trim(), $(`trb-${id}`).value.trim(), ev.currentTarget);
+      });
+
+      const rBtn = card.querySelector('.reply-avatar-btn');
+      const rDd  = card.querySelector('.reply-avatar-dd');
+      if (rBtn && rDd) buildPicker(rBtn, rDd);
 
       feed.appendChild(card);
     });
@@ -2416,6 +2546,66 @@
 
   wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
 
+  // ── PONDER REPLIES ────────────────────────────────────────────
+  async function fetchReplies(thoughtId) {
+    try {
+      const r = await fetch(`/api/thoughts/${thoughtId}/replies`);
+      renderReplies(thoughtId, await r.json());
+    } catch (e) { console.error(e); }
+  }
+
+  function renderReplies(tid, list) {
+    const el = $(`trl-${tid}`);
+    if (!el) return;
+    if (!list.length) { el.innerHTML = '<div class="comments-empty">No replies yet!</div>'; return; }
+    el.innerHTML = list.map(c => `
+      <div class="comment-item">
+        ${avatarDiv(c)}
+        <div class="comment-content">
+          <div class="comment-meta">
+            <span class="comment-name">${escHtml(c.name || 'anonymous')}</span>
+            <span class="comment-time">${timeAgo(c.created_at)}</span>
+          </div>
+          <div class="comment-body">${escHtml(c.body)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function postReply(tid, name, body, btn) {
+    if (!body) return;
+    btn.disabled = true;
+    try {
+      const r = await fetch(`/api/thoughts/${tid}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, body, avatar: localStorage.getItem('avatarEmoji') || null })
+      });
+      if (!r.ok) throw 0;
+      $(`trb-${tid}`).value = '';
+      const t = thoughts.find(x => x.id === tid);
+      if (t) {
+        t.reply_count = (t.reply_count || 0) + 1;
+        const tog = $(`tct-${tid}`);
+        if (tog) tog.textContent = `Replies (${t.reply_count}) ▴`;
+      }
+      await fetchReplies(tid);
+    } catch { showToast('Could not post reply.'); }
+    btn.disabled = false;
+  }
+
+  // ── AD POPUP ──────────────────────────────────────────────────
+  (function() {
+    if (sessionStorage.getItem('adSeen')) return;
+    sessionStorage.setItem('adSeen', '1');
+    setTimeout(() => {
+      $('adOverlay').classList.add('open');
+    }, 15000);
+  })();
+
+  $('adClose').addEventListener('click', () => $('adOverlay').classList.remove('open'));
+  $('adOverlay').addEventListener('click', e => { if (e.target === $('adOverlay')) $('adOverlay').classList.remove('open'); });
+
   // ── CHAT ROOM ─────────────────────────────────────────────────
   const chatOverlay   = $('chatOverlay');
   const chatMessages  = $('chatMessages');
@@ -2433,8 +2623,9 @@
     div.innerHTML = `
       <div class="chat-msg-avatar">${msg.avatar || '👤'}</div>
       <div class="chat-msg-bubble">
-        <div class="chat-msg-name">${msg.name}</div>
-        <div class="chat-msg-text">${msg.body}</div>
+        <div class="chat-msg-name">${escHtml(msg.name)}</div>
+        ${msg.body ? `<div class="chat-msg-text">${escHtml(msg.body)}</div>` : ''}
+        ${msg.image ? `<img class="chat-msg-img" src="${msg.image}" alt="image" />` : ''}
         <div class="chat-msg-time">${formatChatTime(msg.created_at)}</div>
       </div>`;
     chatMessages.appendChild(div);
@@ -2449,20 +2640,60 @@
     } catch { /* silent */ }
   }
 
+  // ── chat image upload ──
+  let pendingChatImage = null;
+
+  function resizeImageToBase64(file, maxPx = 800) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width  = Math.round(img.width  * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  $('chatImgBtn').addEventListener('click', () => $('chatImgInput').click());
+  $('chatImgInput').addEventListener('change', async () => {
+    const file = $('chatImgInput').files[0];
+    if (!file) return;
+    pendingChatImage = await resizeImageToBase64(file);
+    $('chatImgThumb').src = pendingChatImage;
+    $('chatImgName').textContent = file.name;
+    $('chatImgPreview').style.display = 'flex';
+    $('chatImgInput').value = '';
+  });
+  $('chatImgClear').addEventListener('click', () => {
+    pendingChatImage = null;
+    $('chatImgPreview').style.display = 'none';
+  });
+
   async function sendChatMsg() {
     const nameEl = $('chatName');
     const bodyEl = $('chatBody');
-    const name = nameEl.value.trim() || 'anonymous';
-    const body = bodyEl.value.trim();
-    if (!body) return;
-    const avatar = localStorage.getItem('avatar') || null;
+    const name  = nameEl.value.trim() || 'anonymous';
+    const body  = bodyEl.value.trim();
+    const image = pendingChatImage;
+    if (!body && !image) return;
+    const avatar = localStorage.getItem('avatarEmoji') || null;
     localStorage.setItem('chatName', name);
     bodyEl.value = '';
+    pendingChatImage = null;
+    $('chatImgPreview').style.display = 'none';
     try {
       await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, body, avatar })
+        body: JSON.stringify({ name, body, avatar, image: image || null })
       });
     } catch { showToast('Could not send — try again.'); }
   }

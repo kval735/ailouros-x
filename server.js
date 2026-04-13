@@ -185,7 +185,14 @@ app.get('/api/thoughts', async (_req, res) => {
     .order('created_at', { ascending: false });
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+
+  const { data: replyRows } = await sb.from('thought_replies').select('thought_id');
+  const countMap = {};
+  (replyRows || []).forEach(r => {
+    countMap[r.thought_id] = (countMap[r.thought_id] || 0) + 1;
+  });
+
+  res.json((data || []).map(t => ({ ...t, reply_count: countMap[t.id] || 0 })));
 });
 
 app.post('/api/thoughts', async (req, res) => {
@@ -211,6 +218,39 @@ app.post('/api/thoughts', async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
 
   broadcast('thought', data);
+  res.status(201).json(data);
+});
+
+// ── THOUGHT REPLIES ────────────────────────────────────────────
+app.get('/api/thoughts/:id/replies', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+  const { data, error } = await sb
+    .from('thought_replies')
+    .select('*')
+    .eq('thought_id', id)
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.post('/api/thoughts/:id/replies', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+  const { name, body, avatar } = req.body;
+  if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
+  if (body.length > 500) return res.status(400).json({ error: 'reply too long' });
+  const { data, error } = await sb
+    .from('thought_replies')
+    .insert({
+      thought_id: id,
+      name:   (name || 'anonymous').slice(0, 40),
+      body:   body.slice(0, 500),
+      avatar: avatar || null
+    })
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
 });
 
@@ -257,16 +297,17 @@ app.get('/api/chat', async (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { name, body, avatar } = req.body;
-  if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
-  if (body.length > 300) return res.status(400).json({ error: 'too long' });
+  const { name, body, avatar, image } = req.body;
+  if (!body && !image) return res.status(400).json({ error: 'body or image required' });
+  if (body && body.length > 300) return res.status(400).json({ error: 'too long' });
 
   const { data, error } = await sb
     .from('chat_messages')
     .insert({
       name:   (name || 'anonymous').slice(0, 40),
-      body:   body.slice(0, 300),
-      avatar: avatar || null
+      body:   (body || '').slice(0, 300),
+      avatar: avatar || null,
+      image:  image  || null
     })
     .select()
     .single();
