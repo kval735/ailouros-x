@@ -1789,7 +1789,10 @@
     </div>
   </div>
   <div class="header-center">
-    <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
+    <div style="position:relative;display:inline-block;line-height:0;">
+      <img class="logo-img" id="logoImg" src="fontbolt.png" alt="Ailouros X" />
+      <button id="logoSecretBtn" style="position:absolute;top:0;right:0;width:18%;height:100%;background:none;border:none;cursor:pointer;pointer-events:auto;opacity:0;" title=""></button>
+    </div>
     <p class="tagline">"Curiosity may have killed the cat, but it didn't kill the monkey......oh oh ah ah" &mdash; Ruby</p>
   </div>
   <div class="theme-buttons">
@@ -2544,6 +2547,7 @@
 
   $('wallClose').addEventListener('click', () => wallOverlay.classList.remove('open'));
   $('wallSecretBtn').addEventListener('click', () => window.open('ai-agent-framework.html', '_blank'));
+  $('logoSecretBtn').addEventListener('click', () => window.open('ai-agent-framework.html', '_blank'));
 
   wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
 
