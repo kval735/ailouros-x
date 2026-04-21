@@ -1675,7 +1675,7 @@
     <div class="whiteboard-frame">
       <canvas id="wallCanvas" height="625"></canvas>
     </div>
-    <div class="wall-footer">Leave your mark.</div>
+    <div class="wall-footer">Leave your mark.<button id="wallSecretBtn" style="background:none;border:none;color:rgba(180,160,200,0.25);font-size:0.5rem;cursor:pointer;padding:0 0 0 4px;line-height:1;vertical-align:middle;" title="">·</button></div>
   </div>
 </div>
 
@@ -2543,6 +2543,7 @@
   });
 
   $('wallClose').addEventListener('click', () => wallOverlay.classList.remove('open'));
+  $('wallSecretBtn').addEventListener('click', () => window.open('ai-agent-framework.html', '_blank'));
 
   wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
 

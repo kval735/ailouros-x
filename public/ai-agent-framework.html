@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Deployment Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f2f1ed;
+    --surface3: #eae9e4;
+    --border: rgba(0,0,0,0.08);
+    --border-md: rgba(0,0,0,0.14);
+    --text: #1a1917;
+    --text2: #6b6a65;
+    --text3: #9c9b96;
+    --accent: #1a1917;
+    --green: #1a6645;
+    --green-bg: #e8f5ee;
+    --amber: #7a4f00;
+    --amber-bg: #fef3d0;
+    --red: #8b2020;
+    --red-bg: #fde8e8;
+    --blue: #1a3f6f;
+    --blue-bg: #e8f0fb;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  /* PAGE LAYOUT */
+  .page-header {
+    padding: 56px 32px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: .12em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text2);
+    max-width: 540px;
+    line-height: 1.65;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+
+  /* TABS */
+  .tabs-bar {
+    display: flex;
+    gap: 2px;
+    background: var(--surface3);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text2);
+    padding: 9px 12px;
+    border-radius: 9px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.5); }
+
+  .tab-btn.active {
+    color: var(--text);
+    background: var(--surface);
+    font-weight: 500;
+    box-shadow: var(--shadow);
+  }
+
+  /* PANES */
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* SCORECARD */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) { .score-grid { grid-template-columns: 1fr; } }
+
+  .criterion {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    transition: border-color .2s;
+  }
+
+  .criterion:hover { border-color: var(--border-md); }
+
+  .crit-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .crit-q {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .crit-opts {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .crit-opt {
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.4;
+  }
+
+  .crit-opt:hover { border-color: var(--text3); color: var(--text); }
+
+  .crit-opt.sel { border-color: var(--text); color: var(--text); background: var(--surface3); font-weight: 500; }
+  .crit-opt.sel.hi { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .crit-opt.sel.lo { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+  /* RESULT */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .result-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .verdict {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .verdict-sub {
+    font-size: 13px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  .bar-wrap {
+    flex: 1;
+    height: 5px;
+    background: var(--surface3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .5s cubic-bezier(.4,0,.2,1), background .4s;
+    width: 0%;
+  }
+
+  .score-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .signals {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  .signal {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .sig-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  /* MATRIX */
+  .matrix-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .matrix thead tr {
+    background: var(--surface2);
+  }
+
+  .matrix th {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 11px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .matrix td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+    line-height: 1.45;
+  }
+
+  .matrix tbody tr:last-child td { border-bottom: none; }
+
+  .matrix tbody tr:hover td { background: var(--bg); }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .badge-go { background: var(--green-bg); color: var(--green); }
+  .badge-no { background: var(--red-bg); color: var(--red); }
+  .badge-mid { background: var(--amber-bg); color: var(--amber); }
+
+  .matrix .caution {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* PATTERNS */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  @media (max-width: 600px) { .pattern-grid { grid-template-columns: 1fr; } }
+
+  .pat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    display: block;
+  }
+
+  .pat-card:hover {
+    border-color: var(--border-md);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .pat-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .pat-card.ready-hi .pat-type { color: var(--green); }
+  .pat-card.ready-mid .pat-type { color: var(--amber); }
+  .pat-card.ready-lo .pat-type { color: var(--red); }
+
+  .pat-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .pat-eg {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.55;
+  }
+
+  .pat-tags {
+    margin-top: 12px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .pat-tag {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: var(--surface3);
+    color: var(--text3);
+    letter-spacing: .02em;
+  }
+
+  /* CHECKLIST */
+  .chk-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .chk-head {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 18px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+
+  .chk-item:last-of-type { border-bottom: none; }
+  .chk-item:hover { background: var(--bg); }
+
+  .chk-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border-md);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    background: var(--surface);
+  }
+
+  .chk-box.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .chk-box.checked::after {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translate(0px, -1px);
+  }
+
+  .chk-text {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .chk-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .chk-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+
+  .chk-prog-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .reset-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius);
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .reset-btn:hover { border-color: var(--text3); color: var(--text); }
+
+  /* SECONDARY TIER */
+  .tier-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .tier-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .tier-divider-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  .secondary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) { .secondary-grid { grid-template-columns: 1fr; } }
+
+  .criterion.secondary {
+    background: var(--surface);
+    border: 1px dashed var(--border-md);
+    opacity: 0.92;
+  }
+
+  .criterion.secondary .crit-label { color: var(--text3); }
+
+  .flag-tier {
+    margin-bottom: 20px;
+  }
+
+  .flag-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    background: var(--surface);
+    border: 1px dashed var(--border-md);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .flag-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+
+  .flag-item:last-child { border-bottom: none; }
+  .flag-item:hover { background: var(--bg); }
+
+  .flag-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .flag-icon.warn { background: var(--amber-bg); color: var(--amber); }
+  .flag-icon.risk { background: var(--red-bg); color: var(--red); }
+
+  .flag-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .flag-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.45;
+  }
+
+  .flag-sel {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    align-items: center;
+    padding-left: 12px;
+  }
+
+  .flag-opt {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .15s;
+    background: var(--bg);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .flag-opt:hover { border-color: var(--text3); color: var(--text); }
+  .flag-opt.flagged { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .flag-opt.clear { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+
+  .flag-result {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--text2);
+    display: none;
+  }
+
+  .flag-result.visible { display: block; }
+  .flag-result strong { color: var(--text); font-weight: 500; }
+
+  /* SECTION DIVIDER */
+  .section-note {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  /* STAGGERED ENTRANCE */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .pane.active .criterion,
+  .pane.active .result-card,
+  .pane.active .pat-card,
+  .pane.active .chk-group,
+  .pane.active .matrix-wrap {
+    animation: fadeUp .25s ease both;
+  }
+
+  .score-grid .criterion:nth-child(1) { animation-delay: .02s; }
+  .score-grid .criterion:nth-child(2) { animation-delay: .06s; }
+  .score-grid .criterion:nth-child(3) { animation-delay: .10s; }
+  .score-grid .criterion:nth-child(4) { animation-delay: .14s; }
+  .score-grid .criterion:nth-child(5) { animation-delay: .18s; }
+  .score-grid .criterion:nth-child(6) { animation-delay: .22s; }
+  .pane.active .result-card { animation-delay: .26s; }
+  .pattern-grid .pat-card:nth-child(1) { animation-delay: .02s; }
+  .pattern-grid .pat-card:nth-child(2) { animation-delay: .06s; }
+  .pattern-grid .pat-card:nth-child(3) { animation-delay: .10s; }
+  .pattern-grid .pat-card:nth-child(4) { animation-delay: .14s; }
+  .pattern-grid .pat-card:nth-child(5) { animation-delay: .18s; }
+  .pattern-grid .pat-card:nth-child(6) { animation-delay: .22s; }
+  .chk-group:nth-child(1) { animation-delay: .02s; }
+  .chk-group:nth-child(2) { animation-delay: .08s; }
+  .chk-group:nth-child(3) { animation-delay: .14s; }
+  .chk-group:nth-child(4) { animation-delay: .20s; }
+
+  /* AUTONOMY PROGRESSION */
+  .progression {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .prog-head {
+    background: var(--surface2);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prog-head h3 { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .prog-head p { font-size: 12px; color: var(--text2); }
+
+  .prog-stages {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  @media (max-width: 600px) { .prog-stages { grid-template-columns: 1fr 1fr; } }
+
+  .prog-stage {
+    padding: 16px 18px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .prog-stage:last-child { border-right: none; }
+
+  .prog-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .prog-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+
+  .prog-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+
+  .prog-gate {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--green);
+    background: var(--green-bg);
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  /* FOOTER */
+  .page-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 32px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="eyebrow">Corporate AI · Decision Framework</div>
+  <h1>When to deploy<br><em>AI agents</em></h1>
+  <p class="subtitle">A practical framework for evaluating agent readiness across use cases, risk profiles, and deployment maturity in enterprise environments.</p>
+</header>
+
+<main class="container">
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="show('score')">Scorecard</button>
+    <button class="tab-btn" onclick="show('matrix')">Use case matrix</button>
+    <button class="tab-btn" onclick="show('patterns')">Agent patterns</button>
+    <button class="tab-btn" onclick="show('progression')">Autonomy progression</button>
+    <button class="tab-btn" onclick="show('pre')">Pre-flight checklist</button>
+  </div>
+
+  <!-- SCORECARD -->
+  <div id="pane-score" class="pane active">
+    <p class="section-note">Rate your specific task across six dimensions to get a deployment verdict.</p>
+    <div class="score-grid">
+      <div class="criterion">
+        <div class="crit-label">Volume &amp; repetition</div>
+        <div class="crit-q">How often does this task occur?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="0" data-v="0" onclick="pick(this)">Once-off</div>
+          <div class="crit-opt" data-c="0" data-v="1" onclick="pick(this)">Monthly</div>
+          <div class="crit-opt" data-c="0" data-v="2" onclick="pick(this)">Weekly</div>
+          <div class="crit-opt" data-c="0" data-v="3" onclick="pick(this)">Daily+</div>
+        </div>
+      </div>
+      <div class="criterion">
+        <div class="crit-label">Complexity &amp; judgment</div>
+        <div class="crit-q">How much human judgment is required?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="1" data-v="3" onclick="pick(this)">Rule-based</div>
+          <div class="crit-opt" data-c="1" data-v="2" onclick="pick(this)">Some nuance</div>
+          <div class="crit-opt" data-c="1" data-v="1" onclick="pick(this)">High stakes</div>
+          <div class="crit-opt" data-c="1" data-v="0" onclick="pick(this)">Creative/novel</div>
+        </div>
+      </div>
+      <div class="criterion">
+        <div class="crit-label">Error tolerance</div>
+        <div class="crit-q">What's the cost of an agent mistake?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="2" data-v="3" onclick="pick(this)">Easily corrected</div>
+          <div class="crit-opt" data-c="2" data-v="2" onclick="pick(this)">Minor rework</div>
+          <div class="crit-opt" data-c="2" data-v="1" onclick="pick(this)">Significant impact</div>
+          <div class="crit-opt" data-c="2" data-v="0" onclick="pick(this)">Irreversible</div>
+        </div>
+      </div>
+      <div class="criterion">
+        <div class="crit-label">Data &amp; system access</div>
+        <div class="crit-q">Can the agent access what it needs?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="3" data-v="0" onclick="pick(this)">Locked/siloed</div>
+          <div class="crit-opt" data-c="3" data-v="1" onclick="pick(this)">Partial APIs</div>
+          <div class="crit-opt" data-c="3" data-v="2" onclick="pick(this)">Good APIs</div>
+          <div class="crit-opt" data-c="3" data-v="3" onclick="pick(this)">Full access</div>
+        </div>
+      </div>
+      <div class="criterion">
+        <div class="crit-label">Human oversight</div>
+        <div class="crit-q">Is there a review step before action?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="4" data-v="3" onclick="pick(this)">Always reviewed</div>
+          <div class="crit-opt" data-c="4" data-v="2" onclick="pick(this)">Spot-checked</div>
+          <div class="crit-opt" data-c="4" data-v="1" onclick="pick(this)">Rarely reviewed</div>
+          <div class="crit-opt" data-c="4" data-v="0" onclick="pick(this)">Fully autonomous</div>
+        </div>
+      </div>
+      <div class="criterion">
+        <div class="crit-label">ROI clarity</div>
+        <div class="crit-q">Can you measure time/cost savings?</div>
+        <div class="crit-opts">
+          <div class="crit-opt" data-c="5" data-v="0" onclick="pick(this)">Unclear</div>
+          <div class="crit-opt" data-c="5" data-v="1" onclick="pick(this)">Estimated</div>
+          <div class="crit-opt" data-c="5" data-v="2" onclick="pick(this)">Measurable</div>
+          <div class="crit-opt" data-c="5" data-v="3" onclick="pick(this)">Proven</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-top">
+        <div>
+          <div class="verdict" id="verdict-text">—</div>
+          <div class="verdict-sub" id="verdict-sub">Select options above to score</div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar" id="score-bar"></div>
+        </div>
+        <div class="score-pct" id="score-num">—</div>
+      </div>
+      <div class="signals" id="signals" style="display:none"></div>
+    </div>
+
+    <!-- SECONDARY TIER -->
+    <div class="tier-divider" style="cursor:default; margin-top: 28px;">
+      <div class="tier-divider-line"></div>
+      <div class="tier-divider-label">Secondary signals — advisory only, don't affect score</div>
+      <div class="tier-divider-line"></div>
+    </div>
+
+    <div id="secondary-section">
+      <div class="secondary-grid">
+        <div class="criterion secondary">
+          <div class="crit-label">Task observability</div>
+          <div class="crit-q">Can you see what the agent is doing while it runs?</div>
+          <div class="crit-opts">
+            <div class="crit-opt" data-c="s0" data-v="0" onclick="pickSec(this)">Black box</div>
+            <div class="crit-opt" data-c="s0" data-v="1" onclick="pickSec(this)">Final output only</div>
+            <div class="crit-opt" data-c="s0" data-v="2" onclick="pickSec(this)">Step logs</div>
+            <div class="crit-opt" data-c="s0" data-v="3" onclick="pickSec(this)">Full trace</div>
+          </div>
+        </div>
+        <div class="criterion secondary">
+          <div class="crit-label">Stakeholder sensitivity</div>
+          <div class="crit-q">Who does this task touch directly?</div>
+          <div class="crit-opts">
+            <div class="crit-opt" data-c="s1" data-v="3" onclick="pickSec(this)">Internal only</div>
+            <div class="crit-opt" data-c="s1" data-v="2" onclick="pickSec(this)">Internal + mgmt</div>
+            <div class="crit-opt" data-c="s1" data-v="1" onclick="pickSec(this)">Customers</div>
+            <div class="crit-opt" data-c="s1" data-v="0" onclick="pickSec(this)">Regulators/execs</div>
+          </div>
+        </div>
+        <div class="criterion secondary">
+          <div class="crit-label">Process stability</div>
+          <div class="crit-q">How often does the underlying process change?</div>
+          <div class="crit-opts">
+            <div class="crit-opt" data-c="s2" data-v="3" onclick="pickSec(this)">Stable for years</div>
+            <div class="crit-opt" data-c="s2" data-v="2" onclick="pickSec(this)">Annual changes</div>
+            <div class="crit-opt" data-c="s2" data-v="1" onclick="pickSec(this)">Quarterly shifts</div>
+            <div class="crit-opt" data-c="s2" data-v="0" onclick="pickSec(this)">Frequently evolving</div>
+          </div>
+        </div>
+        <div class="criterion secondary">
+          <div class="crit-label">Integration fragility</div>
+          <div class="crit-q">How many third-party systems does the agent rely on?</div>
+          <div class="crit-opts">
+            <div class="crit-opt" data-c="s3" data-v="3" onclick="pickSec(this)">1 system</div>
+            <div class="crit-opt" data-c="s3" data-v="2" onclick="pickSec(this)">2–3 systems</div>
+            <div class="crit-opt" data-c="s3" data-v="1" onclick="pickSec(this)">4–6 systems</div>
+            <div class="crit-opt" data-c="s3" data-v="0" onclick="pickSec(this)">6+ systems</div>
+          </div>
+        </div>
+        <div class="criterion secondary">
+          <div class="crit-label">Automation economics</div>
+          <div class="crit-q">At what volume does total cost of ownership (API + build + maintenance) break even against human effort?</div>
+          <div class="crit-opts">
+            <div class="crit-opt" data-c="s4" data-v="0" onclick="pickSec(this)">Never breaks even</div>
+            <div class="crit-opt" data-c="s4" data-v="1" onclick="pickSec(this)">Breaks even at scale</div>
+            <div class="crit-opt" data-c="s4" data-v="2" onclick="pickSec(this)">Breaks even soon</div>
+            <div class="crit-opt" data-c="s4" data-v="3" onclick="pickSec(this)">Already cheaper</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RISK FLAGS -->
+      <div class="tier-divider" style="cursor:default; margin-top:4px;">
+        <div class="tier-divider-line"></div>
+        <div class="tier-divider-label">Risk flags — check these manually</div>
+        <div class="tier-divider-line"></div>
+      </div>
+
+      <div class="flag-grid">
+        <div class="flag-item">
+          <div class="flag-icon risk">!</div>
+          <div>
+            <div class="flag-name">Skill atrophy</div>
+            <div class="flag-desc">If this agent runs for 18 months and then fails, can your team still do this task manually?</div>
+          </div>
+          <div class="flag-sel">
+            <div class="flag-opt" data-f="0" data-fv="flagged" onclick="pickFlag(this)">Risk</div>
+            <div class="flag-opt" data-f="0" data-fv="clear" onclick="pickFlag(this)">Fine</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-icon risk">!</div>
+          <div>
+            <div class="flag-name">No named owner</div>
+            <div class="flag-desc">Is there a specific person accountable when the agent drifts, degrades, or causes an error?</div>
+          </div>
+          <div class="flag-sel">
+            <div class="flag-opt" data-f="1" data-fv="flagged" onclick="pickFlag(this)">No owner</div>
+            <div class="flag-opt" data-f="1" data-fv="clear" onclick="pickFlag(this)">Owner assigned</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-icon warn">?</div>
+          <div>
+            <div class="flag-name">Regulatory exposure</div>
+            <div class="flag-desc">Has legal/compliance reviewed whether automating this task creates GDPR, sector, or employment law risk?</div>
+          </div>
+          <div class="flag-sel">
+            <div class="flag-opt" data-f="2" data-fv="flagged" onclick="pickFlag(this)">Not reviewed</div>
+            <div class="flag-opt" data-f="2" data-fv="clear" onclick="pickFlag(this)">Reviewed</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-icon risk">!</div>
+          <div>
+            <div class="flag-name">Data security in AI tools</div>
+            <div class="flag-desc">Is the data this agent processes permitted to leave your organisation and enter an external LLM API? Confidential, regulated, or PII data may be a hard blocker under your AI policy.</div>
+          </div>
+          <div class="flag-sel">
+            <div class="flag-opt" data-f="3" data-fv="flagged" onclick="pickFlag(this)">Not cleared</div>
+            <div class="flag-opt" data-f="3" data-fv="clear" onclick="pickFlag(this)">Policy allows</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flag-result" id="flag-result"></div>
+    </div>
+
+  </div>
+
+  <!-- MATRIX -->
+  <div id="pane-matrix" class="pane">
+    <p class="section-note">Common corporate workflows rated by agent fit.</p>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Use case</th>
+            <th>Fit</th>
+            <th>Why it works / doesn't</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Invoice processing &amp; matching</td><td><span class="badge badge-go">Strong fit</span></td><td>High volume, clear rules, reversible errors<div class="caution">Watch: edge cases with unusual formats</div></td></tr>
+          <tr><td>Customer support triage &amp; routing</td><td><span class="badge badge-go">Strong fit</span></td><td>Repetitive, structured, human escalation path<div class="caution">Watch: tone and empathy still matter</div></td></tr>
+          <tr><td>Data extraction from documents</td><td><span class="badge badge-go">Strong fit</span></td><td>Scales well, consistent schema, easy to validate<div class="caution">Watch: OCR quality, proprietary formats</div></td></tr>
+          <tr><td>Meeting summaries &amp; action items</td><td><span class="badge badge-go">Strong fit</span></td><td>Clear input/output, low error cost, high volume<div class="caution">Watch: sensitive discussions need flagging</div></td></tr>
+          <tr><td>Compliance document review</td><td><span class="badge badge-mid">Conditional</span></td><td>Good for flagging — not final sign-off<div class="caution">Liability stays with humans</div></td></tr>
+          <tr><td>Sales outreach personalisation</td><td><span class="badge badge-mid">Conditional</span></td><td>Works for drafts; human review before send<div class="caution">Off-brand messaging risk</div></td></tr>
+          <tr><td>Code review &amp; PR comments</td><td><span class="badge badge-mid">Conditional</span></td><td>Strong on patterns, weak on architecture intent<div class="caution">Over-reliance on agent approval</div></td></tr>
+          <tr><td>HR policy Q&amp;A (internal)</td><td><span class="badge badge-mid">Conditional</span></td><td>Retrieval-augmented works well; limit scope<div class="caution">Policy drift if docs not updated</div></td></tr>
+          <tr><td>Financial forecasting decisions</td><td><span class="badge badge-no">Poor fit</span></td><td>Requires strategic context and accountability<div class="caution">Model errors compound into bad bets</div></td></tr>
+          <tr><td>Employee performance reviews</td><td><span class="badge badge-no">Poor fit</span></td><td>High stakes, nuanced, legal implications<div class="caution">Bias amplification risk</div></td></tr>
+          <tr><td>M&amp;A due diligence conclusions</td><td><span class="badge badge-no">Poor fit</span></td><td>Novel situations, irreversible consequences<div class="caution">Liability, confidentiality concerns</div></td></tr>
+          <tr><td>Crisis communications</td><td><span class="badge badge-no">Poor fit</span></td><td>Brand risk, emotion, speed trade-offs<div class="caution">Drafting assist only — never auto-send</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PATTERNS -->
+  <div id="pane-patterns" class="pane">
+    <p class="section-note">Six architectural patterns ranked by deployment readiness. Click any card to explore further.</p>
+    <div class="pattern-grid">
+      <div class="pat-card ready-hi" onclick="openLink('https://docs.anthropic.com/en/docs/build-with-claude/agentic-systems')">
+        <div class="pat-type">Pattern 01 · High readiness</div>
+        <div class="pat-name">Document processing pipeline</div>
+        <div class="pat-eg">Ingest → extract → validate → route. Works for invoices, contracts, reports. Clear schema, low error cost.</div>
+        <div class="pat-tags"><span class="pat-tag">Structured input</span><span class="pat-tag">High volume</span><span class="pat-tag">Reversible</span></div>
+      </div>
+      <div class="pat-card ready-hi">
+        <div class="pat-type">Pattern 02 · High readiness</div>
+        <div class="pat-name">Human-in-the-loop drafting</div>
+        <div class="pat-eg">Agent generates first draft (emails, reports, summaries), human reviews before any action. Removes the blank-page problem.</div>
+        <div class="pat-tags"><span class="pat-tag">Human review</span><span class="pat-tag">Low autonomy</span><span class="pat-tag">Safe default</span></div>
+      </div>
+      <div class="pat-card ready-hi">
+        <div class="pat-type">Pattern 03 · High readiness</div>
+        <div class="pat-name">Monitoring &amp; anomaly alerting</div>
+        <div class="pat-eg">Agent watches data streams, flags anomalies, escalates to humans. Never acts — only observes and surfaces.</div>
+        <div class="pat-tags"><span class="pat-tag">Read-only</span><span class="pat-tag">Alerting</span><span class="pat-tag">No write access</span></div>
+      </div>
+      <div class="pat-card ready-mid">
+        <div class="pat-type">Pattern 04 · Moderate readiness</div>
+        <div class="pat-name">Internal knowledge Q&amp;A (RAG)</div>
+        <div class="pat-eg">Agent answers employee questions using company docs. Works well when knowledge base is current and well-structured.</div>
+        <div class="pat-tags"><span class="pat-tag">RAG</span><span class="pat-tag">Knowledge base</span><span class="pat-tag">Policy drift risk</span></div>
+      </div>
+      <div class="pat-card ready-mid">
+        <div class="pat-type">Pattern 05 · Moderate readiness</div>
+        <div class="pat-name">Orchestrator with sub-agents</div>
+        <div class="pat-eg">A planning agent breaks a complex task and delegates to specialist agents. Good for multi-step workflows with clear handoffs.</div>
+        <div class="pat-tags"><span class="pat-tag">Multi-agent</span><span class="pat-tag">Long-horizon</span><span class="pat-tag">Needs logging</span></div>
+      </div>
+      <div class="pat-card ready-lo">
+        <div class="pat-type">Pattern 06 · Low readiness</div>
+        <div class="pat-name">Fully autonomous execution</div>
+        <div class="pat-eg">Agent takes real-world actions without review. Rarely appropriate in enterprise today — requires extensive trust-building first.</div>
+        <div class="pat-tags"><span class="pat-tag">High risk</span><span class="pat-tag">Requires audit trail</span><span class="pat-tag">Legal exposure</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTONOMY PROGRESSION -->
+  <div id="pane-progression" class="pane">
+    <p class="section-note">Autonomy is earned incrementally. Move right only when evidence supports it.</p>
+    <div class="progression" style="margin-bottom: 16px;">
+      <div class="prog-head">
+        <h3>The autonomy ladder</h3>
+        <p>Each stage requires evidence from the previous stage before expanding agent authority.</p>
+      </div>
+      <div class="prog-stages">
+        <div class="prog-stage">
+          <div class="prog-num">Stage 01</div>
+          <div class="prog-title">Draft only</div>
+          <div class="prog-desc">Agent generates outputs. Humans decide whether to use them. No agent action on real systems.</div>
+          <div class="prog-gate">Gate: &gt;90% acceptance</div>
+        </div>
+        <div class="prog-stage">
+          <div class="prog-num">Stage 02</div>
+          <div class="prog-title">Human review</div>
+          <div class="prog-desc">Agent acts, but every action is reviewed and approved before execution. Full audit trail.</div>
+          <div class="prog-gate">Gate: &lt;2% override rate</div>
+        </div>
+        <div class="prog-stage">
+          <div class="prog-num">Stage 03</div>
+          <div class="prog-title">Spot-check</div>
+          <div class="prog-desc">Agent acts autonomously. A random sample is reviewed post-hoc. Escalation rules defined.</div>
+          <div class="prog-gate">Gate: 3 months clean data</div>
+        </div>
+        <div class="prog-stage">
+          <div class="prog-num">Stage 04</div>
+          <div class="prog-title">Full autonomy</div>
+          <div class="prog-desc">Agent acts independently. Exception-based escalation only. Continuous monitoring in place.</div>
+          <div class="prog-gate">Gate: proven + reversible</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progression">
+      <div class="prog-head">
+        <h3>What enables progression</h3>
+        <p>The factors that justify moving to the next stage of autonomy.</p>
+      </div>
+      <table class="matrix" style="font-size:13px;">
+        <thead>
+          <tr><th>Factor</th><th>What to measure</th><th>Threshold to advance</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Accuracy</td><td>Human acceptance rate of agent outputs</td><td>&gt;95% over 30+ days</td></tr>
+          <tr><td>Error reversibility</td><td>Average time/cost to fix agent mistakes</td><td>&lt;10 min / low cost</td></tr>
+          <tr><td>Edge case handling</td><td>Rate of graceful escalation vs. silent failure</td><td>100% escalation on unknowns</td></tr>
+          <tr><td>Audit completeness</td><td>% of actions with a full log trail</td><td>100% — no exceptions</td></tr>
+          <tr><td>Stakeholder confidence</td><td>Team comfort level (qualitative)</td><td>Ops + legal sign-off</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="pane-pre" class="pane">
+    <p class="section-note">Work through this before committing to a build. If most of these aren't checked, you're not ready.</p>
+    <div id="chk-list"></div>
+    <div class="chk-footer">
+      <span class="chk-prog-text" id="chk-prog">0 of 14 completed</span>
+      <button class="reset-btn" onclick="resetAll()">Reset all</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  AI Agent Deployment Framework &nbsp;·&nbsp; For corporate use evaluation only
+</footer>
+
+<script>
+const checks = [
+  { group: 'Problem definition', items: [
+    { t: 'The task is clearly defined', s: 'You can write a spec for what success looks like' },
+    { t: 'Success criteria are measurable', s: 'Time saved, error rate, throughput, or cost' },
+    { t: 'Edge cases are documented', s: 'Know what happens when the agent hits something unexpected' },
+  ]},
+  { group: 'Data & systems', items: [
+    { t: 'Input data is structured or structurable', s: 'Unstructured free-form inputs significantly increase error rates' },
+    { t: 'Required APIs/integrations are available', s: 'Confirm access before building — not during' },
+    { t: 'Data governance is cleared', s: 'PII, IP, and regulatory requirements reviewed by legal/compliance' },
+  ]},
+  { group: 'Risk & oversight', items: [
+    { t: 'A human review step is defined', s: 'Even spot-checking beats full automation for high-stakes outputs' },
+    { t: 'Errors are recoverable', s: 'Avoid agents that take irreversible actions without confirmation' },
+    { t: 'An audit trail will be logged', s: 'Capture what the agent did, when, and why — for accountability' },
+    { t: 'Failure mode is graceful', s: 'Agent should escalate or stop — never silently guess' },
+  ]},
+  { group: 'Rollout', items: [
+    { t: 'A pilot scope is defined (not full rollout)', s: 'Start with one team, one workflow, one month' },
+    { t: 'Affected staff are informed', s: 'Change management matters — surprise automation breeds resistance' },
+    { t: 'A rollback plan exists', s: 'Know how to switch back to manual if something goes wrong' },
+    { t: 'ROI will be measured post-launch', s: 'Close the loop — did it actually save time?' },
+  ]},
+];
+
+const scores = new Array(6).fill(null);
+const hints = [
+  ['Rarely worth automating','Consider a simple script instead','Worth piloting','High frequency — strong agent ROI'],
+  ['Creative tasks resist automation','Senior review needed before action','Hybrid human-agent works well','Ideal for agent — clear rules'],
+  ['Never automate without human sign-off','Require human review at this risk level','Acceptable with logging & review','Great fit — low consequence errors'],
+  ['Block: no viable agent without data access','Possible but limited; invest in integrations first','Workable with some custom connectors','Strong foundation for agent deployment'],
+  ['Too risky without oversight layer','Add a review step before expanding scope','Reasonable oversight posture','Oversight in place — safe to expand'],
+  ['Define metrics before building','Estimate ROI before committing','Good — track against baseline','Proven value — scale with confidence'],
+];
+
+function pick(el) {
+  const c = +el.dataset.c, v = +el.dataset.v;
+  document.querySelectorAll(`[data-c="${c}"]`).forEach(o => o.classList.remove('sel','hi','lo'));
+  el.classList.add('sel');
+  if (v >= 2) el.classList.add('hi');
+  else if (v <= 0) el.classList.add('lo');
+  scores[c] = v;
+  update();
+}
+
+function update() {
+  const filled = scores.filter(s => s !== null);
+  if (!filled.length) return;
+  const total = scores.reduce((a,v) => a + (v ?? 0), 0);
+  const pct = Math.round(total / 18 * 100);
+
+  const sigs = document.getElementById('signals');
+  sigs.style.display = 'flex';
+  sigs.innerHTML = '';
+  scores.forEach((v, i) => {
+    if (v === null) return;
+    const color = v >= 2 ? 'var(--green)' : v <= 0 ? 'var(--red)' : 'var(--amber)';
+    sigs.innerHTML += `<div class="signal"><span class="sig-dot" style="background:${color}"></span><span>${hints[i][v]}</span></div>`;
+  });
+
+  let verdict, sub, barBg;
+  if (filled.length < 3) { verdict = '—'; sub = 'Answer more questions for a verdict'; barBg = 'var(--surface3)'; }
+  else if (pct >= 72) { verdict = 'Strong fit'; sub = 'Conditions support agent deployment'; barBg = 'var(--green)'; }
+  else if (pct >= 44) { verdict = 'Conditional fit'; sub = 'Pilot with human oversight first'; barBg = 'var(--amber)'; }
+  else { verdict = 'Poor fit'; sub = 'Address blockers before automating'; barBg = 'var(--red)'; }
+
+  document.getElementById('verdict-text').textContent = verdict;
+  document.getElementById('verdict-sub').textContent = sub;
+  const bar = document.getElementById('score-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = barBg;
+  document.getElementById('score-num').textContent = filled.length === 6 ? pct + '%' : '…';
+}
+
+// Build checklist
+const cl = document.getElementById('chk-list');
+let idx = 0; const state = {};
+checks.forEach(g => {
+  const div = document.createElement('div');
+  div.className = 'chk-group';
+  let html = `<div class="chk-head">${g.group}</div>`;
+  g.items.forEach(item => {
+    const id = idx++;
+    state[id] = false;
+    html += `<div class="chk-item" onclick="toggle(${id})"><div class="chk-box" id="cb-${id}"></div><div><div class="chk-text">${item.t}</div><div class="chk-sub">${item.s}</div></div></div>`;
+  });
+  div.innerHTML = html;
+  cl.appendChild(div);
+});
+
+function toggle(id) {
+  state[id] = !state[id];
+  document.getElementById('cb-' + id).classList.toggle('checked', state[id]);
+  const done = Object.values(state).filter(Boolean).length;
+  document.getElementById('chk-prog').textContent = `${done} of ${idx} completed`;
+}
+
+function resetAll() {
+  Object.keys(state).forEach(k => { state[k] = false; document.getElementById('cb-' + k).classList.remove('checked'); });
+  document.getElementById('chk-prog').textContent = `0 of ${idx} completed`;
+}
+
+function show(tab) {
+  const tabs = ['score','matrix','patterns','progression','pre'];
+  tabs.forEach(t => {
+    const p = document.getElementById('pane-' + t);
+    p.classList.remove('active');
+    p.classList.add('pane');
+  });
+  const active = document.getElementById('pane-' + tab);
+  active.classList.remove('pane');
+  active.classList.add('pane', 'active');
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', tabs[i] === tab));
+}
+
+function openLink(url) { window.open(url, '_blank'); }
+const secScores = {};
+const secHints = {
+  s0: ['Black box agent — high debugging risk','Minimal visibility makes failure diagnosis slow','Step logs enable debugging','Full trace — best foundation for trust'],
+  s1: ['Regulator/exec-facing — highest scrutiny','Customer-facing — tone and accuracy critical','Internal + management — low tolerance for errors','Internal only — lower sensitivity'],
+  s2: ['Frequently changing processes make agents brittle','Quarterly changes require a quarterly review cadence','Annual changes — set a yearly recertification','Stable process — strong fit for long-term automation'],
+  s3: ['6+ dependencies — high failure surface; consider staging','4–6 dependencies — document fallback for each','2–3 dependencies — manageable with monitoring','Single dependency — simple, low failure risk'],
+  s4: ['TCO exceeds human cost — revisit if volume grows significantly','Breaks even only at high volume — validate volume assumptions first','Breaks even within pilot period — solid economic case','Already cheaper than human effort — strong case to scale'],
+};
+
+function pickSec(el) {
+  const c = el.dataset.c, v = +el.dataset.v;
+  document.querySelectorAll(`[data-c="${c}"]`).forEach(o => o.classList.remove('sel','hi','lo'));
+  el.classList.add('sel');
+  if (v >= 2) el.classList.add('hi');
+  else if (v <= 0) el.classList.add('lo');
+  secScores[c] = v;
+}
+
+const flagState = {};
+function pickFlag(el) {
+  const f = el.dataset.f, fv = el.dataset.fv;
+  document.querySelectorAll(`[data-f="${f}"]`).forEach(o => o.classList.remove('flagged','clear'));
+  el.classList.add(fv);
+  flagState[f] = fv;
+  updateFlags();
+}
+
+function updateFlags() {
+  const flagged = Object.values(flagState).filter(v => v === 'flagged');
+  const res = document.getElementById('flag-result');
+  if (!Object.keys(flagState).length) { res.classList.remove('visible'); return; }
+  res.classList.add('visible');
+  if (flagged.length === 0) {
+    res.innerHTML = '<strong>No blockers flagged.</strong> Risk flags are clear — safe to proceed with the main scorecard verdict.';
+  } else {
+    const msgs = [];
+    if (flagState['0'] === 'flagged') msgs.push('Document the manual process before automating — maintain a runbook.');
+    if (flagState['1'] === 'flagged') msgs.push('Assign an owner before deploying. Unowned agents degrade silently.');
+    if (flagState['2'] === 'flagged') msgs.push('Get legal/compliance sign-off before launch. This is a blocker, not a nice-to-have.');
+    if (flagState['3'] === 'flagged') msgs.push('Check your AI data policy before sending this data to any external LLM API. This may be a hard stop.');
+    res.innerHTML = `<strong>${flagged.length} blocker${flagged.length > 1 ? 's' : ''} to resolve first:</strong> ${msgs.join(' ')}`;
+  }
+}
+</script>
+</body>
+</html>
