@@ -201,15 +201,15 @@ app.post('/api/thoughts', async (req, res) => {
   if (!body || typeof body !== 'string') {
     return res.status(400).json({ error: 'body is required' });
   }
-  if (body.length > 280) {
-    return res.status(400).json({ error: 'thought exceeds 280 characters' });
+  if (body.length > 560) {
+    return res.status(400).json({ error: 'thought exceeds 560 characters' });
   }
 
   const { data, error } = await sb
     .from('thoughts')
     .insert({
       name:   (name || 'anonymous').slice(0, 40),
-      body:   body.slice(0, 280),
+      body:   body.slice(0, 560),
       avatar: avatar || null
     })
     .select()

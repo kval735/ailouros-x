@@ -407,34 +407,80 @@
       margin: 6px 0 2px;
     }
     .media-card {
-      background: #fff;
-      border-radius: 12px;
+      background: var(--surface);
+      border-radius: 14px;
       border-left: 5px solid var(--pink);
-      padding: 12px 14px;
+      padding: 14px;
       display: flex;
-      gap: 12px;
+      gap: 14px;
       align-items: flex-start;
-      box-shadow: 0 2px 10px rgba(200,140,180,0.10);
+      box-shadow: 0 2px 12px rgba(200,140,180,0.12);
       text-decoration: none;
       color: inherit;
-      transition: transform 0.15s;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .media-card:hover { transform: translateY(-2px); }
+    .media-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,140,180,0.18); }
     .media-card.youtube { border-left-color: #FF0000; }
     .media-card.podcast { border-left-color: #8940E0; }
     .media-card.article { border-left-color: var(--sky, #90CAF9); }
+
     .media-thumb {
-      width: 90px;
-      height: 60px;
-      border-radius: 6px;
+      width: 120px;
+      height: 78px;
+      border-radius: 8px;
       object-fit: cover;
       flex-shrink: 0;
       background: var(--surface2);
     }
-    .media-info { flex: 1; min-width: 0; }
-    .media-type { font-size: 0.62rem; font-family: var(--broadway); letter-spacing: 0.05em; color: var(--muted); margin-bottom: 3px; }
-    .media-url  { font-size: 0.78rem; color: var(--text2); word-break: break-all; line-height: 1.4; }
-    .media-source { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+    .media-thumb-icon {
+      width: 78px;
+      height: 78px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: var(--surface2);
+    }
+    .media-card.podcast .media-thumb-icon { background: #f0e8fc; }
+    .media-card.article .media-thumb-icon { background: #e8f4fd; }
+
+    .media-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .media-type-label {
+      font-size: 0.6rem;
+      font-family: var(--broadway);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .media-card.youtube .media-type-label { color: #c00; }
+    .media-card.podcast .media-type-label { color: #8940E0; }
+    .media-card.article .media-type-label { color: #4a90b8; }
+
+    .media-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .media-domain {
+      font-size: 0.72rem;
+      color: var(--text2);
+      word-break: break-all;
+      line-height: 1.3;
+      opacity: 0.8;
+    }
+    .media-poster {
+      font-size: 0.67rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .media-poster strong { color: var(--text2); }
     .media-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 40px 20px; }
 
     .pill {
@@ -2066,7 +2112,7 @@
         <label class="compose-label" for="thought-body">Drop a thought...</label>
         <textarea class="compose-textarea" id="thought-body" placeholder="What just crossed your mind?"></textarea>
         <div class="compose-footer">
-          <span class="counter" id="thought-counter">0 / 280</span>
+          <span class="counter" id="thought-counter">0 / 560</span>
           <button class="post-btn thought-btn" id="thought-post-btn" disabled>Post</button>
         </div>
       </div>
@@ -2502,15 +2548,15 @@
   $('thought-body').addEventListener('input', () => {
     const len = $('thought-body').value.length;
     const el  = $('thought-counter');
-    el.textContent = `${len} / 280`;
-    el.className = 'counter' + (len > 280 ? ' over' : len > 230 ? ' warn' : '');
-    $('thought-post-btn').disabled = len === 0 || len > 280;
+    el.textContent = `${len} / 560`;
+    el.className = 'counter' + (len > 560 ? ' over' : len > 480 ? ' warn' : '');
+    $('thought-post-btn').disabled = len === 0 || len > 560;
   });
 
   $('thought-post-btn').addEventListener('click', async () => {
     const body = $('thought-body').value.trim();
     const name = $('thought-name').value.trim() || 'anonymous';
-    if (!body || body.length > 280) return;
+    if (!body || body.length > 560) return;
     $('thought-post-btn').disabled = true;
     try {
       const r = await fetch('/api/thoughts', {
@@ -2535,7 +2581,9 @@
   function connectSSE() {
     const es = new EventSource('/api/events');
 
-    es.addEventListener('essay',   () => fetchEssays());
+    es.addEventListener('essay',   () => fetchEssays().then(() => {
+      if ($('tab-media').classList.contains('active')) renderMediaFeed();
+    }));
     es.addEventListener('thought', () => fetchThoughts());
 
     es.addEventListener('like', (e) => {
@@ -2734,14 +2782,39 @@
     try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
   }
 
-  function renderMediaFeed() {
+  const ytTitleCache = {};
+
+  async function fetchYtTitle(url, vid) {
+    if (ytTitleCache[vid] !== undefined) return ytTitleCache[vid];
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      ytTitleCache[vid] = d.title || '';
+    } catch { ytTitleCache[vid] = ''; }
+    return ytTitleCache[vid];
+  }
+
+  function podcastService(url) {
+    if (/spotify\.com/i.test(url))        return 'Spotify';
+    if (/podcasts\.apple\.com/i.test(url)) return 'Apple Podcasts';
+    if (/anchor\.fm/i.test(url))           return 'Anchor';
+    if (/buzzsprout/i.test(url))           return 'Buzzsprout';
+    if (/overcast\.fm/i.test(url))         return 'Overcast';
+    if (/pocketcasts/i.test(url))          return 'Pocket Casts';
+    if (/podbean/i.test(url))              return 'Podbean';
+    if (/soundcloud\.com/i.test(url))      return 'SoundCloud';
+    return hostName(url);
+  }
+
+  async function renderMediaFeed() {
     const grid = $('media-grid');
     const allUrls = [];
 
     // scan essays
     (essays || []).forEach(e => {
       extractUrls(e.body).forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
-      extractUrls(e.title).forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
+      extractUrls(e.title || '').forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
     });
 
     // scan thoughts/ponders
@@ -2765,28 +2838,69 @@
     const groups = { youtube: [], podcast: [], article: [] };
     unique.forEach(item => groups[item.type].push(item));
 
-    let html = '';
+    // pre-fetch YouTube titles
+    await Promise.all(
+      groups.youtube.map(({ url }) => {
+        const vid = youtubeId(url);
+        return vid ? fetchYtTitle(url, vid) : Promise.resolve();
+      })
+    );
+
     const sections = [
-      { key: 'youtube', label: '▶ YouTube', icon: '🎬' },
-      { key: 'podcast', label: '🎙 Podcasts', icon: '🎙' },
-      { key: 'article', label: '📰 Articles & Links', icon: '📰' }
+      { key: 'youtube', label: '▶ YouTube' },
+      { key: 'podcast', label: '🎙 Podcasts' },
+      { key: 'article', label: '📰 Articles & Links' }
     ];
 
+    let html = '';
     sections.forEach(({ key, label }) => {
       if (!groups[key].length) return;
       html += `<div class="media-section-title">${label}</div>`;
-      groups[key].forEach(({ url, source, type }) => {
-        const vid = type === 'youtube' ? youtubeId(url) : null;
-        const thumb = vid ? `<img class="media-thumb" src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" alt="thumbnail" />` : '';
-        html += `
-          <a class="media-card ${type}" href="${url}" target="_blank" rel="noopener">
-            ${thumb}
-            <div class="media-info">
-              <div class="media-type">${type.toUpperCase()}</div>
-              <div class="media-url">${hostName(url)}</div>
-              <div class="media-source">shared by ${escHtml(source)}</div>
-            </div>
-          </a>`;
+
+      groups[key].forEach(({ url, source }) => {
+        const safeUrl = escHtml(url);
+        const safeSource = escHtml(source);
+
+        if (key === 'youtube') {
+          const vid   = youtubeId(url);
+          const title = escHtml(ytTitleCache[vid] || url);
+          const thumb = vid ? `<img class="media-thumb" src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" alt="thumbnail" />` : '';
+          html += `
+            <a class="media-card youtube" href="${safeUrl}" target="_blank" rel="noopener">
+              ${thumb}
+              <div class="media-info">
+                <div class="media-type-label">▶ YouTube</div>
+                <div class="media-title">${title}</div>
+                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
+              </div>
+            </a>`;
+
+        } else if (key === 'podcast') {
+          const service = escHtml(podcastService(url));
+          html += `
+            <a class="media-card podcast" href="${safeUrl}" target="_blank" rel="noopener">
+              <div class="media-thumb-icon">🎙</div>
+              <div class="media-info">
+                <div class="media-type-label">🎙 Podcast</div>
+                <div class="media-title">${service}</div>
+                <div class="media-domain">${escHtml(hostName(url))}</div>
+                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
+              </div>
+            </a>`;
+
+        } else {
+          const domain = escHtml(hostName(url));
+          html += `
+            <a class="media-card article" href="${safeUrl}" target="_blank" rel="noopener">
+              <div class="media-thumb-icon">📰</div>
+              <div class="media-info">
+                <div class="media-type-label">📰 Article</div>
+                <div class="media-title">${domain}</div>
+                <div class="media-domain">${safeUrl}</div>
+                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
+              </div>
+            </a>`;
+        }
       });
     });
 
