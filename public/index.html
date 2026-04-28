@@ -352,29 +352,38 @@
 
     /* ── PANEL HEADER ── */
     .panel-header {
+      padding: 12px 22px;
       border-bottom: 4px solid var(--pink-soft);
       background: var(--panel-bg);
       display: flex;
-      align-items: stretch;
+      align-items: center;
+      gap: 10px;
       flex-shrink: 0;
     }
 
     .panel-tab {
-      flex: 1;
-      padding: 12px 10px;
       background: none;
       border: none;
       cursor: pointer;
-      font-family: var(--broadway);
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
+      font-family: var(--logo);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
       color: var(--muted);
-      transition: background 0.15s, color 0.15s;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -4px;
+      padding: 0;
+      transition: color 0.15s;
     }
-    .panel-tab:hover { color: var(--text); background: var(--surface2); }
-    .panel-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+    .panel-tab:hover { color: var(--text2); }
+    .panel-tab.active { color: var(--purple); }
+
+    .panel-tab + .panel-tab::before {
+      content: '·';
+      margin-right: 10px;
+      color: var(--pink-soft);
+      font-family: var(--ui);
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
 
     .panel-title {
       font-family: var(--logo);
@@ -2741,7 +2750,7 @@
     });
 
     if (!allUrls.length) {
-      grid.innerHTML = '<div class="media-empty">No links found yet.<br>Post a YouTube video, article, or podcast link anywhere and it'll show up here.</div>';
+      grid.innerHTML = `<div class="media-empty">No links found yet.<br>Post a YouTube video, article, or podcast link anywhere and it will show up here.</div>`;
       return;
     }
 
