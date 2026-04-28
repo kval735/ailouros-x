@@ -254,6 +254,19 @@ app.post('/api/thoughts/:id/replies', async (req, res) => {
   res.status(201).json(data);
 });
 
+// ── STATS ─────────────────────────────────────────────────────
+app.post('/api/stats/visit', async (_req, res) => {
+  const { data, error } = await sb.rpc('increment_visits');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ visits: data });
+});
+
+app.get('/api/stats', async (_req, res) => {
+  const { data, error } = await sb.from('stats').select('visits').eq('id', 1).single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ visits: data?.visits || 0 });
+});
+
 // ── PAGE META (title scraping for Media tab) ───────────────────
 app.get('/api/meta', async (req, res) => {
   const { url } = req.query;

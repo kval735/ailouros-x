@@ -409,57 +409,74 @@
     .media-card {
       background: var(--surface);
       border-radius: 14px;
-      border-left: 5px solid var(--pink);
-      padding: 14px;
+      border-left: 6px solid var(--pink);
+      padding: 16px 20px 16px 16px;
       display: flex;
-      gap: 14px;
-      align-items: flex-start;
+      gap: 16px;
+      align-items: stretch;
       box-shadow: 0 2px 12px rgba(200,140,180,0.12);
       text-decoration: none;
       color: inherit;
       transition: transform 0.15s, box-shadow 0.15s;
+      width: 100%;
     }
     .media-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,140,180,0.18); }
     .media-card.youtube { border-left-color: #FF0000; }
     .media-card.podcast { border-left-color: #8940E0; }
-    .media-card.article { border-left-color: var(--sky, #90CAF9); }
+    .media-card.article { border-left-color: #4a90b8; }
 
     .media-thumb {
-      width: 120px;
-      height: 78px;
+      width: 160px;
+      height: 100px;
       border-radius: 8px;
       object-fit: cover;
       flex-shrink: 0;
       background: var(--surface2);
+      align-self: center;
     }
     .media-thumb-icon {
-      width: 78px;
-      height: 78px;
+      width: 90px;
+      height: 90px;
       border-radius: 8px;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      background: var(--surface2);
+      font-size: 2.4rem;
+      align-self: center;
     }
     .media-card.podcast .media-thumb-icon { background: #f0e8fc; }
     .media-card.article .media-thumb-icon { background: #e8f4fd; }
 
-    .media-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .media-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 5px;
+    }
+    .media-info-top { display: flex; flex-direction: column; gap: 4px; }
+    .media-info-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
     .media-type-label {
-      font-size: 0.6rem;
+      font-size: 0.62rem;
       font-family: var(--broadway);
       letter-spacing: 0.07em;
       text-transform: uppercase;
-      color: var(--muted);
     }
     .media-card.youtube .media-type-label { color: #c00; }
     .media-card.podcast .media-type-label { color: #8940E0; }
     .media-card.article .media-type-label { color: #4a90b8; }
 
     .media-title {
-      font-size: 0.88rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--text);
       line-height: 1.35;
@@ -470,22 +487,18 @@
     }
     .media-domain {
       font-size: 0.72rem;
-      color: var(--text2);
-      word-break: break-all;
+      color: var(--muted);
       line-height: 1.3;
-      opacity: 0.8;
     }
     .media-poster {
-      font-size: 0.67rem;
+      font-size: 0.7rem;
       color: var(--muted);
-      margin-top: 2px;
     }
     .media-poster strong { color: var(--text2); }
     .media-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 40px 20px; }
 
     .media-view-post {
-      display: inline-block;
-      margin-top: 6px;
+      flex-shrink: 0;
       font-size: 0.65rem;
       font-family: var(--broadway);
       letter-spacing: 0.05em;
@@ -493,11 +506,10 @@
       background: var(--surface2);
       border: none;
       border-radius: 20px;
-      padding: 3px 10px;
+      padding: 4px 12px;
       cursor: pointer;
-      text-decoration: none;
+      white-space: nowrap;
       transition: background 0.15s;
-      align-self: flex-start;
     }
     .media-view-post:hover { background: var(--lavender); }
 
@@ -1589,6 +1601,41 @@
       overflow-y: auto;
       max-height: 68vh;
     }
+    .site-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: var(--surface2);
+      border-radius: 14px;
+      padding: 18px 28px;
+      margin-bottom: 20px;
+    }
+    .site-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .site-stat-num {
+      font-family: var(--logo);
+      font-size: 2rem;
+      color: var(--purple);
+      line-height: 1;
+    }
+    .site-stat-label {
+      font-family: var(--broadway);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .site-stat-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+    }
+
     .faq-quote {
       border-left: 4px solid var(--pink);
       padding: 10px 16px;
@@ -1923,6 +1970,18 @@
       <button class="modal-close" id="infoClose">&times;</button>
     </div>
     <div class="info-content">
+
+      <div class="site-stats" id="siteStats">
+        <div class="site-stat">
+          <span class="site-stat-num" id="statVisits">—</span>
+          <span class="site-stat-label">visits</span>
+        </div>
+        <div class="site-stat-divider"></div>
+        <div class="site-stat">
+          <span class="site-stat-num" id="statPosts">—</span>
+          <span class="site-stat-label">posts</span>
+        </div>
+      </div>
 
       <p>Ailouros is the ancient Greek word for cat. X carries two meanings here, it can mean gone or dead, and it is also the Roman numeral for 10. A cat has 9 lives, so the 10th would be its last. Put it together: the dead cat. It all ties back to one idea: curiosity killed the cat. This site exists for the purpose of sharing your curious thoughts.</p>
 
@@ -2665,7 +2724,26 @@
   const wallOverlay = $('wallOverlay');
   const infoOverlay = $('infoOverlay');
 
-  $('infoBtn').addEventListener('click',  () => infoOverlay.classList.add('open'));
+  // ── SITE STATS ────────────────────────────────────────────────
+  (async () => {
+    try {
+      const r = await fetch('/api/stats/visit', { method: 'POST' });
+      if (r.ok) {
+        const { visits } = await r.json();
+        $('statVisits').textContent = visits.toLocaleString();
+      }
+    } catch { /* silent */ }
+  })();
+
+  function updateStatPosts() {
+    const total = (essays?.length || 0) + (thoughts?.length || 0);
+    $('statPosts').textContent = total.toLocaleString();
+  }
+
+  $('infoBtn').addEventListener('click', () => {
+    infoOverlay.classList.add('open');
+    updateStatPosts();
+  });
   $('infoClose').addEventListener('click', () => infoOverlay.classList.remove('open'));
   infoOverlay.addEventListener('click', e => { if (e.target === infoOverlay) infoOverlay.classList.remove('open'); });
   const wallCanvas  = $('wallCanvas');
@@ -2825,8 +2903,20 @@
 
   async function fetchArticleTitle(url) {
     if (articleTitleCache[url] !== undefined) return articleTitleCache[url];
+    // Try Microlink (CORS-enabled, no key needed) first, fall back to our own scraper
     try {
-      const r = await fetch(`/api/meta?url=${encodeURIComponent(url)}`);
+      const r = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&palette=false&audio=false&video=false&iframe=false`, { signal: AbortSignal.timeout(6000) });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.status === 'success' && d.data?.title) {
+          articleTitleCache[url] = d.data.title;
+          return articleTitleCache[url];
+        }
+      }
+    } catch { /* fall through */ }
+    // fallback: our server scraper
+    try {
+      const r = await fetch(`/api/meta?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(6000) });
       if (!r.ok) throw 0;
       const d = await r.json();
       articleTitleCache[url] = d.title || '';
@@ -2939,11 +3029,15 @@
         <a class="media-card ${type}" href="${safeUrl}" target="_blank" rel="noopener">
           ${thumb}
           <div class="media-info">
-            <div class="media-type-label">${label}</div>
-            <div class="media-title">${title}</div>
-            ${domain ? `<div class="media-domain">${domain}</div>` : ''}
-            <div class="media-poster">shared by <strong>${safeSource}</strong></div>
-            <button class="media-view-post" data-post-type="${postType}" data-post-id="${postId}">→ view ${postLabel}</button>
+            <div class="media-info-top">
+              <div class="media-type-label">${label}</div>
+              <div class="media-title">${title}</div>
+              ${domain ? `<div class="media-domain">${domain}</div>` : ''}
+            </div>
+            <div class="media-info-bottom">
+              <div class="media-poster">shared by <strong>${safeSource}</strong></div>
+              <button class="media-view-post" data-post-type="${postType}" data-post-id="${postId}">→ view ${postLabel}</button>
+            </div>
           </div>
         </a>`;
     });
