@@ -254,6 +254,30 @@ app.post('/api/thoughts/:id/replies', async (req, res) => {
   res.status(201).json(data);
 });
 
+// ── PAGE META (title scraping for Media tab) ───────────────────
+app.get('/api/meta', async (req, res) => {
+  const { url } = req.query;
+  if (!url || !/^https?:\/\//i.test(url)) return res.status(400).json({ title: '' });
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AilourosX/1.0)' }
+    });
+    clearTimeout(timer);
+    const raw  = await r.text();
+    const head = raw.slice(0, 8000); // only scan first 8KB
+    const og   = head.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']{1,200})["']/i)?.[1]
+              || head.match(/<meta[^>]+content=["']([^"']{1,200})["'][^>]+property=["']og:title["']/i)?.[1];
+    const tag  = head.match(/<title[^>]*>([^<]{1,200})<\/title>/i)?.[1];
+    const title = (og || tag || '').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').trim();
+    res.json({ title: title.slice(0, 180) });
+  } catch {
+    res.json({ title: '' });
+  }
+});
+
 // ── CANVAS / GRAFFITI WALL ─────────────────────────────────────
 app.get('/api/canvas', async (_req, res) => {
   const { data, error } = await sb

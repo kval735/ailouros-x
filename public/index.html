@@ -483,6 +483,31 @@
     .media-poster strong { color: var(--text2); }
     .media-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 40px 20px; }
 
+    .media-view-post {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 0.65rem;
+      font-family: var(--broadway);
+      letter-spacing: 0.05em;
+      color: var(--purple);
+      background: var(--surface2);
+      border: none;
+      border-radius: 20px;
+      padding: 3px 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      align-self: flex-start;
+    }
+    .media-view-post:hover { background: var(--lavender); }
+
+    @keyframes highlightPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(124,78,187,0.5); }
+      60%  { box-shadow: 0 0 0 12px rgba(124,78,187,0); }
+      100% { box-shadow: 0 0 0 0 rgba(124,78,187,0); }
+    }
+    .highlight-pulse { animation: highlightPulse 1s ease-out 2; }
+
     .pill {
       font-size: 0.66rem;
       font-weight: 800;
@@ -2315,6 +2340,7 @@
 
     essays.forEach(e => {
       const card = document.createElement('div');
+      card.id = 'essay-' + e.id;
       card.className = 'essay-card' + (/^olli$/i.test(e.name || '') ? ' olli-card' : '');
       const wc    = wordCount(e.body);
       const long  = wc > 100;
@@ -2509,6 +2535,7 @@
 
     thoughts.forEach(t => {
       const card  = document.createElement('div');
+      card.id = 'thought-' + t.id;
       card.className = 'thought-card' + (/^olli$/i.test(t.name || '') ? ' olli-card' : '');
       const liked = isLiked('liked_thoughts', t.id);
 
@@ -2782,7 +2809,8 @@
     try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
   }
 
-  const ytTitleCache = {};
+  const ytTitleCache      = {};
+  const articleTitleCache = {};
 
   async function fetchYtTitle(url, vid) {
     if (ytTitleCache[vid] !== undefined) return ytTitleCache[vid];
@@ -2795,8 +2823,19 @@
     return ytTitleCache[vid];
   }
 
+  async function fetchArticleTitle(url) {
+    if (articleTitleCache[url] !== undefined) return articleTitleCache[url];
+    try {
+      const r = await fetch(`/api/meta?url=${encodeURIComponent(url)}`);
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      articleTitleCache[url] = d.title || '';
+    } catch { articleTitleCache[url] = ''; }
+    return articleTitleCache[url];
+  }
+
   function podcastService(url) {
-    if (/spotify\.com/i.test(url))        return 'Spotify';
+    if (/spotify\.com/i.test(url))         return 'Spotify';
     if (/podcasts\.apple\.com/i.test(url)) return 'Apple Podcasts';
     if (/anchor\.fm/i.test(url))           return 'Anchor';
     if (/buzzsprout/i.test(url))           return 'Buzzsprout';
@@ -2807,19 +2846,38 @@
     return hostName(url);
   }
 
+  function jumpToPost(postType, postId) {
+    if (postType === 'essay') {
+      $('tab-essays').click();
+      setTimeout(() => {
+        const card = $('essay-' + postId);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('highlight-pulse');
+          setTimeout(() => card.classList.remove('highlight-pulse'), 2200);
+        }
+      }, 120);
+    } else if (postType === 'thought') {
+      const t = (thoughts || []).find(x => x.id === postId);
+      if (t) openPonderModal(t);
+    }
+  }
+
   async function renderMediaFeed() {
     const grid = $('media-grid');
     const allUrls = [];
 
-    // scan essays
+    // scan essays — keep postId + created_at for sorting and jump
     (essays || []).forEach(e => {
-      extractUrls(e.body).forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
-      extractUrls(e.title || '').forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
+      const meta = { source: e.name || 'anonymous', postId: e.id, postType: 'essay', created_at: e.created_at };
+      extractUrls(e.body).forEach(url => allUrls.push({ url, type: classifyUrl(url), ...meta }));
+      extractUrls(e.title || '').forEach(url => allUrls.push({ url, type: classifyUrl(url), ...meta }));
     });
 
     // scan thoughts/ponders
     (thoughts || []).forEach(t => {
-      extractUrls(t.body).forEach(url => allUrls.push({ url, source: t.name || 'anonymous', type: classifyUrl(url) }));
+      const meta = { source: t.name || 'anonymous', postId: t.id, postType: 'thought', created_at: t.created_at };
+      extractUrls(t.body).forEach(url => allUrls.push({ url, type: classifyUrl(url), ...meta }));
     });
 
     if (!allUrls.length) {
@@ -2827,7 +2885,7 @@
       return;
     }
 
-    // dedupe by url
+    // dedupe by url (keep first = most recent, since essays+thoughts come in desc order)
     const seen = new Set();
     const unique = allUrls.filter(item => {
       if (seen.has(item.url)) return false;
@@ -2835,76 +2893,71 @@
       return true;
     });
 
-    const groups = { youtube: [], podcast: [], article: [] };
-    unique.forEach(item => groups[item.type].push(item));
+    // sort most recent first
+    unique.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    // pre-fetch YouTube titles
-    await Promise.all(
-      groups.youtube.map(({ url }) => {
-        const vid = youtubeId(url);
-        return vid ? fetchYtTitle(url, vid) : Promise.resolve();
-      })
-    );
+    // pre-fetch titles in parallel
+    await Promise.all(unique.map(item => {
+      if (item.type === 'youtube') {
+        const vid = youtubeId(item.url);
+        return vid ? fetchYtTitle(item.url, vid) : Promise.resolve();
+      }
+      if (item.type === 'article') return fetchArticleTitle(item.url);
+      return Promise.resolve();
+    }));
 
-    const sections = [
-      { key: 'youtube', label: '▶ YouTube' },
-      { key: 'podcast', label: '🎙 Podcasts' },
-      { key: 'article', label: '📰 Articles & Links' }
-    ];
+    const typeLabel = { youtube: '▶ YouTube', podcast: '🎙 Podcast', article: '📰 Article' };
+    const typeIcon  = { youtube: null,         podcast: '🎙',         article: '📰' };
 
     let html = '';
-    sections.forEach(({ key, label }) => {
-      if (!groups[key].length) return;
-      html += `<div class="media-section-title">${label}</div>`;
+    unique.forEach(({ url, type, source, postId, postType }) => {
+      const safeUrl    = escHtml(url);
+      const safeSource = escHtml(source);
+      const label      = typeLabel[type] || type;
 
-      groups[key].forEach(({ url, source }) => {
-        const safeUrl = escHtml(url);
-        const safeSource = escHtml(source);
+      let thumb = '';
+      let title = '';
+      let domain = '';
 
-        if (key === 'youtube') {
-          const vid   = youtubeId(url);
-          const title = escHtml(ytTitleCache[vid] || url);
-          const thumb = vid ? `<img class="media-thumb" src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" alt="thumbnail" />` : '';
-          html += `
-            <a class="media-card youtube" href="${safeUrl}" target="_blank" rel="noopener">
-              ${thumb}
-              <div class="media-info">
-                <div class="media-type-label">▶ YouTube</div>
-                <div class="media-title">${title}</div>
-                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
-              </div>
-            </a>`;
+      if (type === 'youtube') {
+        const vid = youtubeId(url);
+        title = escHtml(ytTitleCache[vid] || hostName(url));
+        thumb = vid ? `<img class="media-thumb" src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" alt="thumbnail" />` : '';
+      } else if (type === 'podcast') {
+        title  = escHtml(podcastService(url));
+        domain = escHtml(hostName(url));
+        thumb  = `<div class="media-thumb-icon">🎙</div>`;
+      } else {
+        title  = escHtml(articleTitleCache[url] || hostName(url));
+        domain = escHtml(hostName(url));
+        thumb  = `<div class="media-thumb-icon">📰</div>`;
+      }
 
-        } else if (key === 'podcast') {
-          const service = escHtml(podcastService(url));
-          html += `
-            <a class="media-card podcast" href="${safeUrl}" target="_blank" rel="noopener">
-              <div class="media-thumb-icon">🎙</div>
-              <div class="media-info">
-                <div class="media-type-label">🎙 Podcast</div>
-                <div class="media-title">${service}</div>
-                <div class="media-domain">${escHtml(hostName(url))}</div>
-                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
-              </div>
-            </a>`;
+      const postLabel = postType === 'thought' ? 'ponder' : 'deep dive';
 
-        } else {
-          const domain = escHtml(hostName(url));
-          html += `
-            <a class="media-card article" href="${safeUrl}" target="_blank" rel="noopener">
-              <div class="media-thumb-icon">📰</div>
-              <div class="media-info">
-                <div class="media-type-label">📰 Article</div>
-                <div class="media-title">${domain}</div>
-                <div class="media-domain">${safeUrl}</div>
-                <div class="media-poster">shared by <strong>${safeSource}</strong></div>
-              </div>
-            </a>`;
-        }
-      });
+      html += `
+        <a class="media-card ${type}" href="${safeUrl}" target="_blank" rel="noopener">
+          ${thumb}
+          <div class="media-info">
+            <div class="media-type-label">${label}</div>
+            <div class="media-title">${title}</div>
+            ${domain ? `<div class="media-domain">${domain}</div>` : ''}
+            <div class="media-poster">shared by <strong>${safeSource}</strong></div>
+            <button class="media-view-post" data-post-type="${postType}" data-post-id="${postId}">→ view ${postLabel}</button>
+          </div>
+        </a>`;
     });
 
     grid.innerHTML = html;
+
+    // event delegation for view-post buttons (stop link navigation)
+    grid.querySelectorAll('.media-view-post').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        jumpToPost(btn.dataset.postType, parseInt(btn.dataset.postId));
+      });
+    });
   }
 
   $('tab-essays').addEventListener('click', () => {
