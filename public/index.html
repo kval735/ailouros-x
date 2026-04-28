@@ -352,15 +352,29 @@
 
     /* ── PANEL HEADER ── */
     .panel-header {
-      padding: 12px 22px;
       border-bottom: 4px solid var(--pink-soft);
       background: var(--panel-bg);
-
       display: flex;
-      align-items: center;
-      gap: 10px;
+      align-items: stretch;
       flex-shrink: 0;
     }
+
+    .panel-tab {
+      flex: 1;
+      padding: 12px 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--broadway);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -4px;
+    }
+    .panel-tab:hover { color: var(--text); background: var(--surface2); }
+    .panel-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
 
     .panel-title {
       font-family: var(--logo);
@@ -368,6 +382,51 @@
       font-weight: 700;
       letter-spacing: 0.02em;
     }
+
+    /* ── MEDIA FEED ── */
+    .media-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .media-section-title {
+      font-family: var(--broadway);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin: 6px 0 2px;
+    }
+    .media-card {
+      background: #fff;
+      border-radius: 12px;
+      border-left: 5px solid var(--pink);
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: 0 2px 10px rgba(200,140,180,0.10);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s;
+    }
+    .media-card:hover { transform: translateY(-2px); }
+    .media-card.youtube { border-left-color: #FF0000; }
+    .media-card.podcast { border-left-color: #8940E0; }
+    .media-card.article { border-left-color: var(--sky, #90CAF9); }
+    .media-thumb {
+      width: 90px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface2);
+    }
+    .media-info { flex: 1; min-width: 0; }
+    .media-type { font-size: 0.62rem; font-family: var(--broadway); letter-spacing: 0.05em; color: var(--muted); margin-bottom: 3px; }
+    .media-url  { font-size: 0.78rem; color: var(--text2); word-break: break-all; line-height: 1.4; }
+    .media-source { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+    .media-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 40px 20px; }
 
     .pill {
       font-size: 0.66rem;
@@ -1920,11 +1979,15 @@
 
 <div class="workspace">
 
-  <!-- LEFT: Deep Dives -->
+  <!-- LEFT: Deep Dives / Media -->
   <section class="panel essays-panel">
     <div class="panel-header">
-      <span class="panel-title" style="color:var(--purple)">Deep Dives</span>
-      <span class="pill" style="background:var(--lilac);color:var(--purple);">up to 1000 words</span>
+      <button class="panel-tab active" id="tab-essays">📖 Deep Dives</button>
+      <button class="panel-tab" id="tab-media">📺 Media</button>
+    </div>
+
+    <div class="feed" id="media-feed" style="display:none;">
+      <div class="media-grid" id="media-grid"></div>
     </div>
 
     <div class="feed" id="essays-feed">
@@ -2639,6 +2702,104 @@
   $('logoSecretBtn').addEventListener('click', () => window.open('ai-agent-framework.html', '_blank'));
 
   wallOverlay.addEventListener('click', e => { if (e.target === wallOverlay) wallOverlay.classList.remove('open'); });
+
+  // ── MEDIA TAB ─────────────────────────────────────────────────
+  const URL_REGEX = /https?:\/\/[^\s<>"')\]]+/gi;
+
+  function extractUrls(text) {
+    return (text || '').match(URL_REGEX) || [];
+  }
+
+  function classifyUrl(url) {
+    if (/youtube\.com\/watch|youtu\.be\//i.test(url)) return 'youtube';
+    if (/spotify\.com|podcasts\.apple\.com|anchor\.fm|buzzsprout|overcast\.fm|pocketcasts|podbean|soundcloud\.com/i.test(url)) return 'podcast';
+    return 'article';
+  }
+
+  function youtubeId(url) {
+    const m = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function hostName(url) {
+    try { return new URL(url).hostname.replace('www.', ''); } catch { return url; }
+  }
+
+  function renderMediaFeed() {
+    const grid = $('media-grid');
+    const allUrls = [];
+
+    // scan essays
+    (essays || []).forEach(e => {
+      extractUrls(e.body).forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
+      extractUrls(e.title).forEach(url => allUrls.push({ url, source: e.name || 'anonymous', type: classifyUrl(url) }));
+    });
+
+    // scan thoughts/ponders
+    (thoughts || []).forEach(t => {
+      extractUrls(t.body).forEach(url => allUrls.push({ url, source: t.name || 'anonymous', type: classifyUrl(url) }));
+    });
+
+    if (!allUrls.length) {
+      grid.innerHTML = '<div class="media-empty">No links found yet.<br>Post a YouTube video, article, or podcast link anywhere and it'll show up here.</div>';
+      return;
+    }
+
+    // dedupe by url
+    const seen = new Set();
+    const unique = allUrls.filter(item => {
+      if (seen.has(item.url)) return false;
+      seen.add(item.url);
+      return true;
+    });
+
+    const groups = { youtube: [], podcast: [], article: [] };
+    unique.forEach(item => groups[item.type].push(item));
+
+    let html = '';
+    const sections = [
+      { key: 'youtube', label: '▶ YouTube', icon: '🎬' },
+      { key: 'podcast', label: '🎙 Podcasts', icon: '🎙' },
+      { key: 'article', label: '📰 Articles & Links', icon: '📰' }
+    ];
+
+    sections.forEach(({ key, label }) => {
+      if (!groups[key].length) return;
+      html += `<div class="media-section-title">${label}</div>`;
+      groups[key].forEach(({ url, source, type }) => {
+        const vid = type === 'youtube' ? youtubeId(url) : null;
+        const thumb = vid ? `<img class="media-thumb" src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" alt="thumbnail" />` : '';
+        html += `
+          <a class="media-card ${type}" href="${url}" target="_blank" rel="noopener">
+            ${thumb}
+            <div class="media-info">
+              <div class="media-type">${type.toUpperCase()}</div>
+              <div class="media-url">${hostName(url)}</div>
+              <div class="media-source">shared by ${escHtml(source)}</div>
+            </div>
+          </a>`;
+      });
+    });
+
+    grid.innerHTML = html;
+  }
+
+  $('tab-essays').addEventListener('click', () => {
+    $('tab-essays').classList.add('active');
+    $('tab-media').classList.remove('active');
+    $('essays-feed').style.display = '';
+    $('media-feed').style.display = 'none';
+    document.querySelector('.compose-tab').style.display = '';
+  });
+
+  $('tab-media').addEventListener('click', () => {
+    $('tab-media').classList.add('active');
+    $('tab-essays').classList.remove('active');
+    $('essays-feed').style.display = 'none';
+    $('media-feed').style.display = '';
+    document.querySelector('.compose-tab').style.display = 'none';
+    renderMediaFeed();
+  });
 
   // ── PONDER MODAL ──────────────────────────────────────────────
   const ponderOverlay = $('ponderOverlay');
