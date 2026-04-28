@@ -258,21 +258,41 @@ app.post('/api/thoughts/:id/replies', async (req, res) => {
 app.get('/api/meta', async (req, res) => {
   const { url } = req.query;
   if (!url || !/^https?:\/\//i.test(url)) return res.status(400).json({ title: '' });
+
+  function decodeEntities(s) {
+    return s.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&apos;/g,"'")
+            .replace(/&quot;/g,'"').replace(/&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  }
+
+  function extractTitle(html) {
+    const head = html.slice(0, 12000);
+    // og:title (both attribute orderings)
+    const og = head.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']{1,250})["']/i)?.[1]
+            || head.match(/<meta[^>]+content=["']([^"']{1,250})["'][^>]+property=["']og:title["']/i)?.[1]
+            // also handle unquoted or double-encoded
+            || head.match(/property=og:title[^>]+content=["']([^"']{1,250})["']/i)?.[1];
+    // <title> tag (may span a line)
+    const tag = head.match(/<title[^>]*>([\s\S]{1,250}?)<\/title>/i)?.[1]?.replace(/\s+/g,' ').trim();
+    return decodeEntities((og || tag || '').trim()).slice(0, 180);
+  }
+
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const timer = setTimeout(() => ctrl.abort(), 6000);
     const r = await fetch(url, {
       signal: ctrl.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AilourosX/1.0)' }
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache'
+      }
     });
     clearTimeout(timer);
-    const raw  = await r.text();
-    const head = raw.slice(0, 8000); // only scan first 8KB
-    const og   = head.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']{1,200})["']/i)?.[1]
-              || head.match(/<meta[^>]+content=["']([^"']{1,200})["'][^>]+property=["']og:title["']/i)?.[1];
-    const tag  = head.match(/<title[^>]*>([^<]{1,200})<\/title>/i)?.[1];
-    const title = (og || tag || '').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').trim();
-    res.json({ title: title.slice(0, 180) });
+    if (!r.ok) return res.json({ title: '' });
+    const raw = await r.text();
+    res.json({ title: extractTitle(raw) });
   } catch {
     res.json({ title: '' });
   }
