@@ -10,7 +10,7 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '30mb' }));
 app.use(express.static('public'));
 
 // ── SSE: real-time push to all connected browsers ──────────────
