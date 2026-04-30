@@ -57,25 +57,39 @@ app.get('/api/essays', async (_req, res) => {
 });
 
 app.post('/api/essays', async (req, res) => {
-  const { name, title, body, avatar } = req.body;
+  const { name, title, body: rawBody, avatar, blocks } = req.body;
 
-  if (!body || typeof body !== 'string') {
+  // Derive plain body from blocks (for search/media scanning) or use raw body
+  let body = rawBody || '';
+  if (blocks && Array.isArray(blocks)) {
+    body = blocks
+      .filter(b => b.type === 'text')
+      .map(b => (b.content || '').trim())
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
+  const hasImages = blocks && blocks.some(b => b.type === 'images' && b.urls?.length);
+  if (!body && !hasImages) {
     return res.status(400).json({ error: 'body is required' });
   }
 
-  const wordCount = body.trim().split(/\s+/).length;
+  const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
   if (wordCount > 1000) {
     return res.status(400).json({ error: 'essay exceeds 1000 words' });
   }
 
+  const insert = {
+    name:   (name  || 'anonymous').slice(0, 40),
+    title:  (title || 'Untitled').slice(0, 120),
+    body:   body.slice(0, 10000),
+    avatar: avatar || null
+  };
+  if (blocks) insert.blocks = blocks;
+
   const { data, error } = await sb
     .from('essays')
-    .insert({
-      name:   (name  || 'anonymous').slice(0, 40),
-      title:  (title || 'Untitled').slice(0, 120),
-      body:   body.slice(0, 10000),
-      avatar: avatar || null
-    })
+    .insert(insert)
     .select()
     .single();
 

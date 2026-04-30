@@ -708,11 +708,120 @@
     }
 
     .card-body.collapsed {
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
+      max-height: 160px;
       overflow: hidden;
+      mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     }
+
+    /* ── CARD IMAGE BLOCKS ── */
+    .card-img-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .card-img-row .card-block-img {
+      flex: 1;
+      min-width: 80px;
+      max-height: 280px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .card-img-row .card-block-img:hover { opacity: 0.9; }
+    .card-block-text { white-space: pre-wrap; word-break: break-word; }
+
+    /* ── BLOCK COMPOSER ── */
+    .block-composer {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bc-text-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .bc-textarea {
+      width: 100%;
+      min-height: 80px;
+      resize: vertical;
+    }
+    .bc-add-row { display: flex; gap: 8px; padding: 2px 0; }
+    .bc-add-img-btn {
+      background: none;
+      border: 1.5px dashed var(--pink-soft);
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      font-family: var(--broadway);
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .bc-add-img-btn:hover { background: var(--surface2); color: var(--text2); border-color: var(--pink); }
+    .bc-img-wrap {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bc-img-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+    .bc-img-thumb {
+      position: relative;
+      width: 82px;
+      height: 82px;
+      flex-shrink: 0;
+    }
+    .bc-img-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .bc-img-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      font-size: 0.55rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      line-height: 1;
+    }
+    .bc-img-add-more {
+      width: 82px;
+      height: 82px;
+      border: 2px dashed var(--pink-soft);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .bc-img-add-more:hover { border-color: var(--pink); color: var(--pink); }
+    .bc-img-row-footer { display: flex; justify-content: flex-end; }
+    .bc-img-remove-row {
+      background: none;
+      border: none;
+      font-size: 0.65rem;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+      font-family: var(--broadway);
+    }
+    .bc-img-remove-row:hover { color: var(--rose); }
 
     .thought-body-text {
       font-family: var(--ui);
@@ -2060,6 +2169,11 @@
   </div>
 </div>
 
+<!-- Image Lightbox -->
+<div id="imgLightbox" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="imgLightboxImg" src="" alt="" style="max-width:92vw;max-height:90vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 60px rgba(0,0,0,0.5);" />
+</div>
+
 <!-- Ad Popup -->
 <div id="adOverlay">
   <div class="ad-inner">
@@ -2155,8 +2269,9 @@
             <input class="compose-input" id="essay-title" type="text" placeholder="Give your yarn a title..." maxlength="120" />
           </div>
         </div>
-        <label class="compose-label" for="essay-body">Your yarn</label>
-        <textarea class="compose-textarea" id="essay-body" rows="5" placeholder="What's been on your mind? Write it out..."></textarea>
+        <label class="compose-label">Your yarn</label>
+        <div id="blockComposer" class="block-composer"></div>
+        <input type="file" id="essay-img-input" accept="image/*" multiple style="display:none;" />
         <div class="compose-footer">
           <span class="counter" id="essay-counter">0 / 1000 words</span>
           <button class="post-btn" id="essay-post-btn" disabled>Post</button>
@@ -2401,10 +2516,26 @@
       const card = document.createElement('div');
       card.id = 'essay-' + e.id;
       card.className = 'essay-card' + (/^olli$/i.test(e.name || '') ? ' olli-card' : '');
-      const wc    = wordCount(e.body);
-      const long  = wc > 100;
       const liked = isLiked('liked_essays', e.id);
       const cc    = e.comment_count || 0;
+
+      // Build content from blocks (new) or body (legacy)
+      let contentHtml = '';
+      let totalWc = 0;
+      if (e.blocks && e.blocks.length) {
+        const textParts = e.blocks.filter(b => b.type === 'text').map(b => b.content || '');
+        totalWc = wordCount(textParts.join(' '));
+        e.blocks.forEach(b => {
+          if (b.type === 'text' && b.content)
+            contentHtml += `<div class="card-block-text">${escHtml(b.content)}</div>`;
+          else if (b.type === 'images' && b.urls?.length)
+            contentHtml += `<div class="card-img-row">${b.urls.map(u => `<img class="card-block-img" src="${u}" alt="" />`).join('')}</div>`;
+        });
+      } else {
+        totalWc = wordCount(e.body);
+        contentHtml = `<div class="card-block-text">${escHtml(e.body)}</div>`;
+      }
+      const long = totalWc > 100;
 
       card.innerHTML = `
         <div class="banana-strip" id="bananas-${e.id}">${renderLikes(e.like_count, 12)}</div>
@@ -2416,7 +2547,7 @@
           </div>
         </div>
         <h3>${escHtml(e.title)}</h3>
-        <div class="card-body${long ? ' collapsed' : ''}">${escHtml(e.body)}</div>
+        <div class="card-body${long ? ' collapsed' : ''}">${contentHtml}</div>
         ${long ? '<button class="read-more">Read more</button>' : ''}
         <div class="card-divider"></div>
         <div class="card-actions">
@@ -2543,30 +2674,167 @@
     btn.disabled = false;
   }
 
-  $('essay-body').addEventListener('input', () => {
-    const wc = wordCount($('essay-body').value);
+  // ── BLOCK COMPOSER ───────────────────────────────────────────
+  let essayBlocks = [{ type: 'text', content: '' }];
+
+  function resizeImage(file, maxW = 1400, q = 0.82) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxW / img.width);
+        const c = document.createElement('canvas');
+        c.width  = Math.round(img.width  * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', q));
+      };
+      img.src = url;
+    });
+  }
+
+  function updateEssayCounter() {
+    const allText = essayBlocks.filter(b => b.type === 'text').map(b => b.content || '').join(' ');
+    const wc = wordCount(allText);
     const el = $('essay-counter');
     el.textContent = `${wc} / 1000 words`;
     el.className = 'counter' + (wc > 1000 ? ' over' : wc > 850 ? ' warn' : '');
-    $('essay-post-btn').disabled = wc === 0 || wc > 1000;
+    const hasContent = wc > 0 || essayBlocks.some(b => b.type === 'images' && b.urls?.length);
+    $('essay-post-btn').disabled = !hasContent || wc > 1000;
+  }
+
+  function triggerEssayImagePick(blockIndex) {
+    const inp = $('essay-img-input');
+    inp.dataset.blockIndex = blockIndex;
+    inp.value = '';
+    inp.click();
+  }
+
+  function renderBlockComposer() {
+    const container = $('blockComposer');
+    container.innerHTML = '';
+
+    essayBlocks.forEach((block, i) => {
+      if (block.type === 'text') {
+        const wrap = document.createElement('div');
+        wrap.className = 'bc-text-wrap';
+
+        const ta = document.createElement('textarea');
+        ta.className = 'compose-textarea bc-textarea';
+        ta.placeholder = i === 0 ? "What's been on your mind? Write it out..." : 'Continue writing...';
+        ta.value = block.content || '';
+        ta.addEventListener('input', () => {
+          essayBlocks[i].content = ta.value;
+          updateEssayCounter();
+        });
+
+        const addRow = document.createElement('div');
+        addRow.className = 'bc-add-row';
+        const imgBtn = document.createElement('button');
+        imgBtn.type = 'button';
+        imgBtn.className = 'bc-add-img-btn';
+        imgBtn.textContent = '📷 Add images here';
+        imgBtn.addEventListener('click', () => {
+          // Insert image block + following text block after this one
+          essayBlocks.splice(i + 1, 0, { type: 'images', urls: [] });
+          if (!essayBlocks[i + 2] || essayBlocks[i + 2].type !== 'text') {
+            essayBlocks.splice(i + 2, 0, { type: 'text', content: '' });
+          }
+          renderBlockComposer();
+          setTimeout(() => triggerEssayImagePick(i + 1), 50);
+        });
+        addRow.appendChild(imgBtn);
+
+        wrap.appendChild(ta);
+        wrap.appendChild(addRow);
+        container.appendChild(wrap);
+
+      } else if (block.type === 'images') {
+        const wrap = document.createElement('div');
+        wrap.className = 'bc-img-wrap';
+
+        const row = document.createElement('div');
+        row.className = 'bc-img-row';
+
+        (block.urls || []).forEach((url, j) => {
+          const thumb = document.createElement('div');
+          thumb.className = 'bc-img-thumb';
+          const img = document.createElement('img');
+          img.src = url;
+          const rem = document.createElement('button');
+          rem.type = 'button';
+          rem.className = 'bc-img-remove';
+          rem.textContent = '✕';
+          rem.addEventListener('click', () => {
+            essayBlocks[i].urls.splice(j, 1);
+            if (!essayBlocks[i].urls.length) essayBlocks.splice(i, 1);
+            renderBlockComposer();
+          });
+          thumb.appendChild(img);
+          thumb.appendChild(rem);
+          row.appendChild(thumb);
+        });
+
+        const addMore = document.createElement('button');
+        addMore.type = 'button';
+        addMore.className = 'bc-img-add-more';
+        addMore.textContent = '+';
+        addMore.title = 'Add another image to this row';
+        addMore.addEventListener('click', () => triggerEssayImagePick(i));
+        row.appendChild(addMore);
+
+        const footer = document.createElement('div');
+        footer.className = 'bc-img-row-footer';
+        const remRow = document.createElement('button');
+        remRow.type = 'button';
+        remRow.className = 'bc-img-remove-row';
+        remRow.textContent = '✕ remove row';
+        remRow.addEventListener('click', () => {
+          essayBlocks.splice(i, 1);
+          renderBlockComposer();
+        });
+        footer.appendChild(remRow);
+
+        wrap.appendChild(row);
+        wrap.appendChild(footer);
+        container.appendChild(wrap);
+      }
+    });
+
+    updateEssayCounter();
+  }
+
+  $('essay-img-input').addEventListener('change', async (e) => {
+    const idx   = parseInt(e.target.dataset.blockIndex);
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const b64 = await resizeImage(file);
+      if (essayBlocks[idx]?.type === 'images') essayBlocks[idx].urls.push(b64);
+    }
+    renderBlockComposer();
   });
+
+  // Initialise composer on load
+  renderBlockComposer();
 
   $('essay-post-btn').addEventListener('click', async () => {
     const title = $('essay-title').value.trim();
-    const body  = $('essay-body').value.trim();
     const name  = $('essay-name').value.trim() || 'anonymous';
-    if (!body || wordCount(body) > 1000) return;
+    const allText = essayBlocks.filter(b => b.type === 'text').map(b => b.content || '').join(' ');
+    const hasImages = essayBlocks.some(b => b.type === 'images' && b.urls?.length);
+    if ((!allText.trim() && !hasImages) || wordCount(allText) > 1000) return;
     $('essay-post-btn').disabled = true;
     try {
       const r = await fetch('/api/essays', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, title, body, avatar: localStorage.getItem('avatarEmoji') || null })
+        body: JSON.stringify({ name, title, blocks: essayBlocks, avatar: localStorage.getItem('avatarEmoji') || null })
       });
       if (!r.ok) throw 0;
-      $('essay-body').value = '';
+      essayBlocks = [{ type: 'text', content: '' }];
       $('essay-title').value = '';
-      $('essay-body').dispatchEvent(new Event('input'));
+      renderBlockComposer();
       composeDrawer.classList.remove('open');
       composeTab.classList.remove('open');
       await fetchEssays();
@@ -3151,6 +3419,21 @@
 
   $('adClose').addEventListener('click', () => $('adOverlay').classList.remove('open'));
   $('adOverlay').addEventListener('click', e => { if (e.target === $('adOverlay')) $('adOverlay').classList.remove('open'); });
+
+  // ── IMAGE LIGHTBOX ─────────────────────────────────────────────
+  const lightbox    = $('imgLightbox');
+  const lightboxImg = $('imgLightboxImg');
+  document.addEventListener('click', e => {
+    const img = e.target.closest('.card-block-img');
+    if (img) {
+      lightboxImg.src = img.src;
+      lightbox.style.display = 'flex';
+    }
+  });
+  lightbox.addEventListener('click', () => {
+    lightbox.style.display = 'none';
+    lightboxImg.src = '';
+  });
 
   // ── CHAT ROOM ─────────────────────────────────────────────────
   const chatOverlay   = $('chatOverlay');
