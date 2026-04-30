@@ -1055,7 +1055,12 @@
       flex-shrink: 0;
     }
 
-    .compose-drawer.open { max-height: 600px; }
+    .compose-drawer.open {
+      max-height: 60vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--pink-soft) transparent;
+    }
 
     .compose-area {
       border-top: 4px solid var(--pink-soft);
@@ -1127,6 +1132,11 @@
       align-items: center;
       justify-content: space-between;
       margin-top: 10px;
+      position: sticky;
+      bottom: 0;
+      background: var(--compose-bg);
+      padding: 8px 0 2px;
+      z-index: 2;
     }
 
     .counter { font-family: var(--broadway); font-size: 0.7rem; font-weight: 800; color: var(--muted); letter-spacing: 0.06em; }
@@ -2029,7 +2039,7 @@
     .thought-card { padding: 10px 12px 8px; }
 
     /* ── COMPOSE ── */
-    .compose-drawer.open { max-height: 520px !important; }
+    .compose-drawer.open { max-height: 55vh !important; }
     .compose-area        { padding: 12px 14px; }
     .compose-row         { flex-wrap: wrap; gap: 6px; }
     .field-wrap          { min-width: 0; flex: 1 1 100%; }
@@ -2535,7 +2545,7 @@
         totalWc = wordCount(e.body);
         contentHtml = `<div class="card-block-text">${escHtml(e.body)}</div>`;
       }
-      const long = totalWc > 100;
+      const long = totalWc > 100 || (e.blocks && e.blocks.some(b => b.type === 'images' && b.urls?.length));
 
       card.innerHTML = `
         <div class="banana-strip" id="bananas-${e.id}">${renderLikes(e.like_count, 12)}</div>
