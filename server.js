@@ -75,8 +75,8 @@ app.post('/api/essays', async (req, res) => {
   }
 
   const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
-  if (wordCount > 1000) {
-    return res.status(400).json({ error: 'essay exceeds 1000 words' });
+  if (wordCount > 3000) {
+    return res.status(400).json({ error: 'essay exceeds 3000 words' });
   }
 
   const insert = {

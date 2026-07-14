@@ -730,7 +730,10 @@
       transition: opacity 0.15s;
     }
     .card-img-row .card-block-img:hover { opacity: 0.9; }
-    .card-block-text { white-space: pre-wrap; word-break: break-word; }
+    .card-block-text { word-break: break-word; line-height: 1.7; }
+    .card-block-text b, .card-block-text strong { font-weight: 800; }
+    .card-block-text i, .card-block-text em { font-style: italic; }
+    .card-block-text u { text-decoration: underline; }
 
     /* ── BLOCK COMPOSER ── */
     .block-composer {
@@ -739,10 +742,51 @@
       gap: 6px;
     }
     .bc-text-wrap { display: flex; flex-direction: column; gap: 4px; }
-    .bc-textarea {
+
+    .bc-format-toolbar {
+      display: flex;
+      gap: 4px;
+    }
+    .bc-fmt-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 28px;
+      height: 26px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--text);
+      line-height: 1;
+      transition: background 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bc-fmt-btn:hover { background: var(--lavender); }
+    .bc-fmt-bold  { font-weight: 800; }
+    .bc-fmt-italic { font-style: italic; }
+    .bc-fmt-underline { text-decoration: underline; }
+
+    .bc-editor {
       width: 100%;
-      min-height: 80px;
-      resize: vertical;
+      min-height: 90px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: var(--ui);
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.6;
+      outline: none;
+      word-break: break-word;
+      transition: border-color 0.15s;
+    }
+    .bc-editor:focus { border-color: var(--purple); }
+    .bc-editor:empty::before {
+      content: attr(data-placeholder);
+      color: var(--muted);
+      pointer-events: none;
     }
     .bc-add-row { display: flex; gap: 8px; padding: 2px 0; }
     .bc-add-img-btn {
@@ -2537,7 +2581,7 @@
         totalWc = wordCount(textParts.join(' '));
         e.blocks.forEach(b => {
           if (b.type === 'text' && b.content)
-            contentHtml += `<div class="card-block-text">${escHtml(b.content)}</div>`;
+            contentHtml += `<div class="card-block-text">${renderBlockText(b.content)}</div>`;
           else if (b.type === 'images' && b.urls?.length)
             contentHtml += `<div class="card-img-row">${b.urls.map(u => `<img class="card-block-img" src="${u}" alt="" />`).join('')}</div>`;
         });
@@ -2704,14 +2748,41 @@
     });
   }
 
+  function blockPlainText(content) {
+    if (!content) return '';
+    const d = document.createElement('div');
+    d.innerHTML = content;
+    return d.textContent || '';
+  }
+
+  function sanitizeBlockHtml(html) {
+    if (!html) return '';
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    d.querySelectorAll('script,style').forEach(el => el.remove());
+    d.querySelectorAll('*').forEach(el => {
+      Array.from(el.attributes).forEach(a => {
+        if (a.name.startsWith('on') || a.name === 'src' || (a.name === 'href' && /^javascript/i.test(a.value)))
+          el.removeAttribute(a.name);
+      });
+    });
+    return d.innerHTML;
+  }
+
+  function renderBlockText(content) {
+    if (!content) return '';
+    // Legacy plain-text blocks (no HTML tags) → escape; new rich blocks → sanitize
+    return /<[a-z]/i.test(content) ? sanitizeBlockHtml(content) : escHtml(content);
+  }
+
   function updateEssayCounter() {
-    const allText = essayBlocks.filter(b => b.type === 'text').map(b => b.content || '').join(' ');
+    const allText = essayBlocks.filter(b => b.type === 'text').map(b => blockPlainText(b.content)).join(' ');
     const wc = wordCount(allText);
     const el = $('essay-counter');
-    el.textContent = `${wc} / 1000 words`;
-    el.className = 'counter' + (wc > 1000 ? ' over' : wc > 850 ? ' warn' : '');
+    el.textContent = `${wc} / 3000 words`;
+    el.className = 'counter' + (wc > 3000 ? ' over' : wc > 2700 ? ' warn' : '');
     const hasContent = wc > 0 || essayBlocks.some(b => b.type === 'images' && b.urls?.length);
-    $('essay-post-btn').disabled = !hasContent || wc > 1000;
+    $('essay-post-btn').disabled = !hasContent || wc > 3000;
   }
 
   function triggerEssayImagePick(blockIndex) {
@@ -2730,12 +2801,32 @@
         const wrap = document.createElement('div');
         wrap.className = 'bc-text-wrap';
 
-        const ta = document.createElement('textarea');
-        ta.className = 'compose-textarea bc-textarea';
-        ta.placeholder = i === 0 ? "What's been on your mind? Write it out..." : 'Continue writing...';
-        ta.value = block.content || '';
-        ta.addEventListener('input', () => {
-          essayBlocks[i].content = ta.value;
+        // Formatting toolbar
+        const toolbar = document.createElement('div');
+        toolbar.className = 'bc-format-toolbar';
+        [['bold','B'],['italic','I'],['underline','U']].forEach(([cmd, label]) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bc-fmt-btn bc-fmt-' + cmd;
+          btn.title = cmd.charAt(0).toUpperCase() + cmd.slice(1);
+          btn.textContent = label;
+          btn.addEventListener('mousedown', e => {
+            e.preventDefault();
+            document.execCommand(cmd, false, null);
+            essayBlocks[i].content = editor.innerHTML;
+            updateEssayCounter();
+          });
+          toolbar.appendChild(btn);
+        });
+
+        // Rich text editor (contenteditable)
+        const editor = document.createElement('div');
+        editor.contentEditable = 'true';
+        editor.className = 'bc-editor';
+        editor.dataset.placeholder = i === 0 ? "What's been on your mind? Write it out..." : 'Continue writing...';
+        if (block.content) editor.innerHTML = block.content;
+        editor.addEventListener('input', () => {
+          essayBlocks[i].content = editor.innerHTML;
           updateEssayCounter();
         });
 
@@ -2746,7 +2837,6 @@
         imgBtn.className = 'bc-add-img-btn';
         imgBtn.textContent = '📷 Add images here';
         imgBtn.addEventListener('click', () => {
-          // Insert image block + following text block after this one
           essayBlocks.splice(i + 1, 0, { type: 'images', urls: [] });
           if (!essayBlocks[i + 2] || essayBlocks[i + 2].type !== 'text') {
             essayBlocks.splice(i + 2, 0, { type: 'text', content: '' });
@@ -2756,7 +2846,8 @@
         });
         addRow.appendChild(imgBtn);
 
-        wrap.appendChild(ta);
+        wrap.appendChild(toolbar);
+        wrap.appendChild(editor);
         wrap.appendChild(addRow);
         container.appendChild(wrap);
 
@@ -2831,9 +2922,9 @@
   $('essay-post-btn').addEventListener('click', async () => {
     const title = $('essay-title').value.trim();
     const name  = $('essay-name').value.trim() || 'anonymous';
-    const allText = essayBlocks.filter(b => b.type === 'text').map(b => b.content || '').join(' ');
+    const allText = essayBlocks.filter(b => b.type === 'text').map(b => blockPlainText(b.content)).join(' ');
     const hasImages = essayBlocks.some(b => b.type === 'images' && b.urls?.length);
-    if ((!allText.trim() && !hasImages) || wordCount(allText) > 1000) return;
+    if ((!allText.trim() && !hasImages) || wordCount(allText) > 3000) return;
     $('essay-post-btn').disabled = true;
     try {
       const r = await fetch('/api/essays', {
